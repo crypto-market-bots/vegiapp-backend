@@ -16,8 +16,8 @@ dotenv.config({ path: "./Config/config.env" });
 //connecting to database
 connectDatabase();
 
-const server = app.listen(process.env.PORT, () => {
-  console.log(`Server is port on the ${process.env.PORT}`);
+const server = app.listen(8080, () => {
+  console.log(`Server is port on the ${8080}`);
 });
 
 //Unhandling Rejection Promise Error
