@@ -5,21 +5,51 @@ const ApiFeatures = require("../utils/apifeatures");
 //const { prototype } = require("nodemailer/lib/mime-node");
 const multer = require("multer");
 const path = require("path");
+const dotenv = require("dotenv");
+dotenv.config({ path: "../Config/config.env" });
 
+const cloudinary = require("cloudinary");
+
+// we will upload image on cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUD_NAME,
+  api_key: process.env.CLOUD_API_KEY,
+  api_service: process.env.CLOUD_API_SECRET,
+});
 //Create Product-- only use by Admin
 exports.createProduct = catchAsyncError(async (req, res, next) => {
- 
+ console.log(req.body)
   req.body.seller = req.seller.id;
   //req.body.seller);
-  const file = req.file;
-  if (!file) {
-    return next(new ErrorHander("Please upload atleast one image", 400));
+  console.log(req.files)
+  if (
+    !req.files ||
+    Object.keys(req.files).length === 0 ||
+    Object.keys(req.files).length > 1
+  ) {
+    return next(new ErrorHander("please upload one image", 400));
+  }
+  const file = req.files.file;
+  if (file.size > 2 * 1024 * 1024) {
+    return next(new ErrorHander("Image Size too large", 400));
   }
 
-  const fileName = req.file.filename;
-  console.log(fileName)
-  const basePath = `${req.protocol}://${req.get("host")}/public/productImages/`;
-  req.body.image = `${basePath}${fileName}`;
+ if(file.mimetype !=='image/jpeg' && file.mimetype !=='image/png' ){
+  return next(new ErrorHander("File format is incorrect.",400))
+ }
+  try {
+    cloudinary.v2.uploader.upload(file.tempFilePath,{folder:"Product Images"},async(err,result) => {
+        if(err) return next(new ErrorHander(err,400));
+        req.body.public_image_id = result.public_id,
+        res.body.image = result.secure_url
+    })
+  } catch (err) {
+    return next(new ErrorHander(err, 500));
+  }
+  
+
+
+  
   const product = await Product.create(req.body);
   res.status(201).json({
     success: true,

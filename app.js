@@ -4,7 +4,7 @@ const errorMiddleware = require("./middleware/error");
 const cookieParser = require("cookie-parser");
 const dotenv = require("dotenv");
 dotenv.config({ path: "./Config/config.env" });
-const bodyParser =  require("body-parser");
+var bodyParser =  require('body-parser');
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended:true}));
 
@@ -21,7 +21,7 @@ const category = require('./routes/categoryRoute');
 const favourite =  require('./routes/favouriteRoute');
 // const product_route = require("./routes/productRoute")
 console.log(__dirname);
-app.use( '/public/productImages',express.static(__dirname+'/public/productImages'));
+// app.use( '/public/productImages',express.static(__dirname+'/public/productImages'));
 
 // app.use('/api',product_route)
 app.use("/api/v4", products);
