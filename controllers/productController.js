@@ -158,7 +158,7 @@ exports.deleteProducts = catchAsyncError(async (req, res, next) => {
 
 //Get all product
 exports.getallProduct = catchAsyncError(async (req, res) => {
-  const resultPerPage = 5;
+  const resultPerPage = 10;
   const ApiFeature = new ApiFeatures(Product.find(), req.query)
     .search()
     .filter()
