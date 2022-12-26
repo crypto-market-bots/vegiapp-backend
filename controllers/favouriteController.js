@@ -1,7 +1,7 @@
 const catchAsyncError = require("../middleware/catchAsyncError");
 const Favourite = require("../models/favouriteModel");
 const ErrorHander = require("../utils/errorhander");
-
+const Product = require("../models/productModel");
 exports.addItemToFavourite = catchAsyncError(async (req, res, next) => {
   Favourite.findOne({ user: req.user.id }).exec(async (error, favourite) => {
     if (error){
@@ -12,6 +12,8 @@ exports.addItemToFavourite = catchAsyncError(async (req, res, next) => {
       //if the cart is already exits then update the cart quantatiy
       //"hello");
       if (req.body.productId) {
+        const product = await Product.findById(req.body.productId);
+        if(!product) return next(new ErrorHander("Product doesn't exist in our stock",400))
         condition = { user: req.user.id };
         action = {
           $push: {
@@ -90,7 +92,9 @@ exports.removeItemFromFavourite = catchAsyncError(async (req, res, next) => {
 
 
   exports.getAllFavourite = catchAsyncError(async (req, res, next) => {
-    const favourite = await Favourite.find({user:req.user.id});
+    const favourite = await Favourite.find({user:req.user.id}).populate({
+      path:"favourite.productsId"
+    });
     res.status(200).json({
       success: true,
       favourite: favourite,

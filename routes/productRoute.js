@@ -39,7 +39,7 @@ router
   .put(
     isAuthenticated,
     authorizedRoles("seller"),
-    upload.single("image"),
+    
     updateProduct
   )
   .delete(isAuthenticated, authorizedRoles("seller"), deleteProducts);
