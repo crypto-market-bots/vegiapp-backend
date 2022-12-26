@@ -4,23 +4,26 @@ const ErrorHander = require("../utils/errorhander");
 const Product = require("../models/productModel");
 exports.addItemToFavourite = catchAsyncError(async (req, res, next) => {
   Favourite.findOne({ user: req.user.id }).exec(async (error, favourite) => {
-    if (error){
-  // console.log("in ")
+    if (error) {
+      // console.log("in ")
       return next(new ErrorHander(error, 400));
-    } 
+    }
     if (favourite) {
       //if the cart is already exits then update the cart quantatiy
       //"hello");
       if (req.body.productId) {
         const product = await Product.findById(req.body.productId);
-        if(!product) return next(new ErrorHander("Product doesn't exist in our stock",400))
+        if (!product)
+          return next(
+            new ErrorHander("Product doesn't exist in our stock", 400)
+          );
         condition = { user: req.user.id };
         action = {
           $push: {
             productsId: req.body.productId,
           },
         };
-        Favourite.findOneAndUpdate(condition, action).exec(  
+        Favourite.findOneAndUpdate(condition, action).exec(
           (error, favourite) => {
             if (error) return next(new ErrorHander(error, 400));
             if (favourite) {
@@ -31,7 +34,7 @@ exports.addItemToFavourite = catchAsyncError(async (req, res, next) => {
           }
         );
       } else {
-        return next(new ErrorHander("All fields is required",400));
+        return next(new ErrorHander("All fields is required", 400));
       }
     } else {
       //if cart not exists then create a new cart
@@ -46,60 +49,53 @@ exports.addItemToFavourite = catchAsyncError(async (req, res, next) => {
   });
 });
 
-
 exports.removeItemFromFavourite = catchAsyncError(async (req, res, next) => {
-    if (req.body.productId) {
-        Favourite.findOne({ user: req.user.id }).exec(async (error, favourite) => {
-        if (error) return next(new ErrorHander(error, 400));
-        if (favourite) {
-          //if the cart is already exits then update the cart quantatiy
-          //"hello");
-          const productId = req.body.productId;
-          // const products = cart.cartItems.find();
-          const item =  await favourite.productsId.findIndex((c) => c == productId);
-          let condition, action;
-          //item);
-          console.log(item);
-          if (item >= 0) {
-            // //item);
-            // condition = { user: req.user.id, "cartItems.product": productId }
-            favourite.productsId.splice(item, 1);
-            console.log("in remove fvourite")
-           
-            favourite.save();
-            res.status(200).json({
-                success:true,
-                favourite
-            })
-          } 
-          else {
-            console.log("else")
-            return next(new ErrorHander("Not in our Favourite", 400));
-          }
+  if (req.body.productId) {
+    Favourite.findOne({ user: req.user.id }).exec(async (error, favourite) => {
+      if (error) return next(new ErrorHander(error, 400));
+      if (favourite) {
+        //if the cart is already exits then update the cart quantatiy
+        //"hello");
+        const productId = req.body.productId;
+        // const products = cart.cartItems.find();
+        const item = await favourite.productsId.findIndex(
+          (c) => c == productId
+        );
+        let condition, action;
+        //item);
+        console.log(item);
+        if (item >= 0) {
+          // //item);
+          // condition = { user: req.user.id, "cartItems.product": productId }
+          favourite.productsId.splice(item, 1);
+          console.log("in remove fvourite");
 
+          favourite.save();
+          res.status(200).json({
+            success: true,
+            favourite,
+          });
         } else {
-          //if cart not exists then create a new cart
-          return next(new ErrorHander("database error", 400));
+          console.log("else");
+          return next(new ErrorHander("Not in our Favourite", 400));
         }
-      });
-    } else {
-      return next(new ErrorHander("Please give the product Id", 400));
-    }
-    // res.status(200).json({
-    //   success:true
-    // })
-  });
-
-
-  exports.getAllFavourite = catchAsyncError(async (req, res, next) => {
-    const favourite = await Favourite.find({user:req.user.id}).populate({
-      path:"favourite.productsId"
+      } else {
+        //if cart not exists then create a new cart
+        return next(new ErrorHander("database error", 400));
+      }
     });
-    res.status(200).json({
-      success: true,
-      favourite: favourite,
-    });
-  });
-  
+  } else {
+    return next(new ErrorHander("Please give the product Id", 400));
+  }
+  // res.status(200).json({
+  //   success:true
+  // })
+});
 
- 
+exports.getAllFavourite = catchAsyncError(async (req, res, next) => {
+  const favourite = await Favourite.find({ user: req.user.id }).populate([{ path: 'favourite.productsId', strictPopulate: false }]);
+  res.status(200).json({
+    success: true,
+    favourite: [...favourite],
+  });
+});
