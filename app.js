@@ -14,6 +14,10 @@ app.use(cookieParser());
 app.use(fileUpload({
     useTempFiles:true
   }))
+  var cors = require('cors')
+
+ 
+app.use(cors())
 
 const products = require("./routes/productRoute");
 const users = require("./routes/userRoute");
