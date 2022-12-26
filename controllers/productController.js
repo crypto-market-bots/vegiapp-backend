@@ -283,8 +283,8 @@ exports.deleteReview = catchAsyncError(async (req, res, next) => {
 });
 
 exports.getAllProductWithSellerId = catchAsyncError(async (req, res, next) => {
-  req.body.user = req.user.id;
-  const product = await Product.find({ user: req.body.user });
+  req.body.seller = req.seller.id;
+  const product = await Product.find({ seller: req.body.seller });
   res.status(200).json({
     success: true,
     product,
