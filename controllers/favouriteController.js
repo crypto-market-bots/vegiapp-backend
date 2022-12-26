@@ -17,6 +17,13 @@ exports.addItemToFavourite = catchAsyncError(async (req, res, next) => {
           return next(
             new ErrorHander("Product doesn't exist in our stock", 400)
           );
+         const alreadyAdded = await Favourite.find({productsId:req.body.productId});
+         if(alreadyAdded) {
+          console.log("yes");
+          return res
+                .status(200)
+                .json({ success: true });
+         }
         condition = { user: req.user.id };
         action = {
           $push: {
@@ -93,9 +100,8 @@ exports.removeItemFromFavourite = catchAsyncError(async (req, res, next) => {
 });
 
 exports.getAllFavourite = catchAsyncError(async (req, res, next) => {
-  const favourite = await Favourite.find({ user: req.user.id }).populate([{ path: 'favourite.productsId', strictPopulate: false }]);
+  const favourite = await Favourite.find({ user: req.user.id }).populate( {path:'productsId'})
   res.status(200).json({
     success: true,
-    favourite: [...favourite],
-  });
+    favourite  });
 });

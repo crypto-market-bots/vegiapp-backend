@@ -29,6 +29,7 @@ exports.addItemToCart = catchAsyncError(async (req, res, next) => {
               "cartItems.$": {
                 ...req.body.cartItems,
                 quantity: isItemAdded.quantity + req.body.cartItems.quantity,
+                price:req.body.cartItems.price,
                 last_update_At: Date.now(),
               },
             },
@@ -50,6 +51,7 @@ exports.addItemToCart = catchAsyncError(async (req, res, next) => {
           action = {
             $push: {
               cartItems: req.body.cartItems,
+
             },
           };
           Cart.findOneAndUpdate(condition, action).exec((error, _cart) => {
@@ -111,11 +113,12 @@ exports.removeItemFromCart = catchAsyncError(async (req, res, next) => {
 
 
 exports.cartAllProduct = catchAsyncError(async (req, res, next) => {
-  const carts = await Cart.find({user:req.user.id}).populate({
-    path: "cartItems.productId",
-  });
+  const carts = await Cart.find({user:req.user.id}).populate([{
+    path: "cartItems.productId"
+    , strictPopulate: false 
+  }]);
   res.status(200).json({
     success: true,
-    carts,
+    carts:[...carts],
   });
 });
