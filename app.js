@@ -15,7 +15,6 @@ app.use(fileUpload({
     useTempFiles:true
   }))
   var cors = require('cors')
-
  
 app.use(cors())
 
