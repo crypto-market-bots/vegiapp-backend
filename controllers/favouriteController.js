@@ -17,9 +17,11 @@ exports.addItemToFavourite = catchAsyncError(async (req, res, next) => {
           return next(
             new ErrorHander("Product doesn't exist in our stock", 400)
           );
-         const alreadyAdded = await Favourite.find({productsId:req.body.productId});
-         if(alreadyAdded) {
-          console.log("yes");
+            // console.log(req.body.productId);
+         const alreadyAdded = await Favourite.find({"productsId":req.body.productId});
+        //  console.log(alreadyAdded);
+         if(alreadyAdded.length > 0) {
+          // console.log("yes");
           return res
                 .status(200)
                 .json({ success: true });
@@ -70,12 +72,12 @@ exports.removeItemFromFavourite = catchAsyncError(async (req, res, next) => {
         );
         let condition, action;
         //item);
-        console.log(item);
+        // console.log(item);
         if (item >= 0) {
           // //item);
           // condition = { user: req.user.id, "cartItems.product": productId }
           favourite.productsId.splice(item, 1);
-          console.log("in remove fvourite");
+          // console.log("in remove fvourite");
 
           favourite.save();
           res.status(200).json({
@@ -83,7 +85,7 @@ exports.removeItemFromFavourite = catchAsyncError(async (req, res, next) => {
             favourite,
           });
         } else {
-          console.log("else");
+          // console.log("else");
           return next(new ErrorHander("Not in our Favourite", 400));
         }
       } else {
