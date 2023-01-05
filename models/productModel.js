@@ -111,7 +111,10 @@ const productSchema = new mongoose.Schema({
     type:Number,
     required: [true,"enter the stock alert"]
   },
-
+  quantity:{
+    type:Number,
+    required:[true,"enter the quantity"]
+  }
   //section
   //count
 });

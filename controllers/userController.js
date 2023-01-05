@@ -22,6 +22,7 @@ const twilioNum = process.env.TWILIO_PHONE_NUMBER;
 
 exports.registerUser = catchAsyncError(async (req, res, next) => {
   const { name, email, password, phone, pincode} = req.body;
+  if(!name || !email || !password || !phone || !pincode) return next(new ErrorHander("all fields are required"));
   const user = await User.findOne({
     $or: [{ email: email }, { phone: phone }],
   });
@@ -57,7 +58,7 @@ exports.registerUser = catchAsyncError(async (req, res, next) => {
         email: email,
         password: hashPassword,
         phone: phone,
-        current_store_location : store_location,
+        current_store_location : store_location._id,
       });
 
       const saved_user = await User.findOne({ email: email });
