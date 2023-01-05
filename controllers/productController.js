@@ -20,8 +20,7 @@ cloudinary.config({
 exports.createProduct = catchAsyncError(async (req, res, next) => {
   console.log(req.body);
   req.body.seller = req.seller.id;
-  //req.body.seller);
-  console.log(req.files);
+ 
   let public;
   let imageone;
   if (
@@ -131,7 +130,10 @@ exports.updateProduct = catchAsyncError(async (req, res, next) => {
     runValidators: true,
     useFindAndModify: false,
   });
-  
+  res.status(200).json({
+    success:true,
+    message:"Product Changed Successfully"
+  })
   //"helo");
 });
 
@@ -300,8 +302,8 @@ const removeTmp = (path) => {
   });
 };
 
-///Upload Image
 
+///Upload Image
 const FILE_TYPE_MAP = {
   "image/png": "png",
   "image/jpeg": "jpeg",

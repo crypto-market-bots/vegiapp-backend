@@ -1,5 +1,6 @@
 const catchAsyncError = require("../middleware/catchAsyncError");
-const Category = require("../models/categoriesModel");
+
+const Section = require("../models/sectionModel");
 const ErrorHander = require("../utils/errorhander");
 
 const multer = require("multer");
@@ -16,7 +17,7 @@ cloudinary.config({
   api_secret: process.env.CLOUD_API_SECRET,
 });
 
-exports.createCategory = catchAsyncError(async (req, res, next) => {
+exports.createSection = catchAsyncError(async (req, res, next) => {
   console.log("ok");
   req.body.seller_id = req.seller.id;
   let public;
@@ -42,7 +43,7 @@ exports.createCategory = catchAsyncError(async (req, res, next) => {
 
   cloudinary.v2.uploader.upload(
     file.tempFilePath,
-    { folder: "CategoryImages" },
+    { folder: "SectionImages" },
     async (err, result) => {
       if (err) return next(new ErrorHander(err, 400));
       console.log(result);
@@ -53,10 +54,10 @@ exports.createCategory = catchAsyncError(async (req, res, next) => {
       req.body.public_image_id = public;
       req.body.image = imageone;
 
-      const category = await Category.create(req.body);
+      const section = await Section.create(req.body);
       res.status(200).json({
         success: true,
-        category,
+        section,
       });
     }
   );
@@ -64,21 +65,21 @@ exports.createCategory = catchAsyncError(async (req, res, next) => {
 
 
 
-exports.updateCategory = catchAsyncError(async (req, res, next) => {
+exports.updateSection = catchAsyncError(async (req, res, next) => {
 
-  let category = await Category.findById(req.params.id);
-  console.log(category);
-  if (!category) {
+  let section = await Section.findById(req.params.id);
+  console.log(section);
+  if (!section) {
     return next(
       new ErrorHander(
-        "Category Does not exists please create the category first",
+        "Section Does not exists please create the section first",
         400
       )
     );
   }
   if (req.body.name) {
     console.log("helo n");
-    const category = await Category.findByIdAndUpdate(req.params.id, {
+    const section = await Section.findByIdAndUpdate(req.params.id, {
       $set: { name: req.body.name },
     });
   }
@@ -108,7 +109,7 @@ exports.updateCategory = catchAsyncError(async (req, res, next) => {
 
     cloudinary.v2.uploader.upload(
       file.tempFilePath,
-      { folder: "CategoryImages" },
+      { folder: "SectionImages" },
       async (err, result) => {
         if (err) return next(new ErrorHander(err, 400));
         console.log(result);
@@ -119,7 +120,7 @@ exports.updateCategory = catchAsyncError(async (req, res, next) => {
         req.body.public_image_id = result.public_id;
         req.body.image = result.secure_url;
         
-        const category = await Category.findByIdAndUpdate(req.params.id, {
+        const section = await Section.findByIdAndUpdate(req.params.id, {
       $set: { image: req.body.image ,public_image_id:req.body.public_image_id},
     });
   })
@@ -133,35 +134,35 @@ exports.updateCategory = catchAsyncError(async (req, res, next) => {
         productsId: req.body.productsId,
       },
     };
-    const v = await Category.findByIdAndUpdate(req.params.id, action);
+    const v = await Section.findByIdAndUpdate(req.params.id, action);
   }
   res.status(200).json({
     success: true,
   });
 });
 
-exports.getAllCategory = catchAsyncError(async (req, res, next) => {
-  const category = await Category.find();
+exports.getAllSection = catchAsyncError(async (req, res, next) => {
+  const section = await Section.find();
   res.status(200).json({
     success: true,
-    category: category,
+    section: section,
   });
 });
 
-exports.getSingleCategory = catchAsyncError(async (req, res, next) => {
-  const category = await Category.findById(req.params.id).populate({
+exports.getSingleSection = catchAsyncError(async (req, res, next) => {
+  const section = await Section.findById(req.params.id).populate({
     path: "productsId",
   });
 
-  res.status(200).json({ success: true, category });
+  res.status(200).json({ success: true, section });
 });
 
-exports.deleteCategory = catchAsyncError(async (req, res, next) => {
-  const category = await Category.findById(req.params.id);
-  if (!category) {
-    return next(new ErrorHander("Category Does't Exists", 400));
+exports.deleteSection = catchAsyncError(async (req, res, next) => {
+  const section = await Section.findById(req.params.id);
+  if (!section) {
+    return next(new ErrorHander("Section Does't Exists", 400));
   }
-  await category.remove();
+  await section.remove();
 
   res.status(200).json({
     success: true,
@@ -169,31 +170,31 @@ exports.deleteCategory = catchAsyncError(async (req, res, next) => {
   });
 });
 
-exports.removeProductFromCategory = catchAsyncError(async (req, res, next) => {
-  const category = await Category.findById(req.params.id);
-  if (!category) {
-    return next(new ErrorHander("Category Does't Exists", 400));
+exports.removeProductFromSection = catchAsyncError(async (req, res, next) => {
+  const section = await Section.findById(req.params.id);
+  if (!section) {
+    return next(new ErrorHander("Section Does't Exists", 400));
   } else {
     if (req.body.productId) {
-      Category.findById(req.params.id).exec(async (error, category) => {
+      Section.findById(req.params.id).exec(async (error, section) => {
         if (error) return next(new ErrorHander(error, 400));
-        if (category) {
+        if (section) {
           //if the cart is already exits then update the cart quantatiy
           //"hello");
           const productId = req.body.productId;
 
           // const products = cart.cartItems.find();
-          const item = category.productsId.findIndex((c) => c == productId);
+          const item = section.productsId.findIndex((c) => c == productId);
           let condition, action;
           //item);
           if (item >= 0) {
             // //item);
             // condition = { user: req.user.id, "cartItems.product": productId }
-            category.productsId.splice(item, 1);
-            category.save();
-            res.status(200).json({ success: true, category });
+            section.productsId.splice(item, 1);
+            section.save();
+            res.status(200).json({ success: true, section });
           } else {
-            return next(new ErrorHander("product not in our category", 400));
+            return next(new ErrorHander("product not in our section", 400));
           }
         }
       });
