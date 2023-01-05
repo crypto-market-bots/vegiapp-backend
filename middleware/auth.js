@@ -44,6 +44,7 @@ exports.isAuthenticated = catchAsyncError(async (req, res, next) => {
         }
         //await Seller.findById(decodedData.userID));
         next();
+        console.log(req.body.file);
       }
     });
 
