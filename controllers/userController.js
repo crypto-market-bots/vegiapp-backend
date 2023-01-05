@@ -27,7 +27,7 @@ const twilioNum = process.env.TWILIO_PHONE_NUMBER;
 //register the user
 
 exports.registerUser = catchAsyncError(async (req, res, next) => {
-  const { name, email, password, phone } = req.body;
+  const { name, email, password, phone, pincode} = req.body;
   const user = await User.findOne({
     $or: [{ email: email }, { phone: phone }],
   });
@@ -51,6 +51,11 @@ exports.registerUser = catchAsyncError(async (req, res, next) => {
         );
         
       }
+      const store_location = await Location.findOne({is_store:true, pincode:pincode})
+      if(!store_location){
+        return next( new ErrorHander("Please provide a valid pincode for store", 400));
+      }
+
       const salt = await bcrypt.genSalt(10);
       const hashPassword = await bcrypt.hash(password, salt);
 
@@ -59,6 +64,7 @@ exports.registerUser = catchAsyncError(async (req, res, next) => {
         email: email,
         password: hashPassword,
         phone: phone,
+        current_store_location : store_location,
       });
 
       const saved_user = await User.findOne({ email: email });

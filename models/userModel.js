@@ -37,7 +37,7 @@ const userSchema = new mongoose.Schema({
     current_store_location :{
         type: mongoose.Schema.ObjectId,
         ref: "Location",
-        required: false,
+        required: true,
     },
     
     delivery_address : [{
