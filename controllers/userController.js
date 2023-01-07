@@ -374,3 +374,16 @@ exports.addDeliveryAddress = catchAsyncError(async (req, res, next) => {
     return next(new ErrorHander("all fields are required", 400));
   }
 });
+
+
+
+exports.getAllDeliveryLocation = catchAsyncError(async(req,res,next)=>{
+  let user = await User.findById(req.user.id).populate([{
+    path: "delivery_address"
+    , strictPopulate: false 
+  }]);;
+  res.status(200).json({
+    success:true,
+    user
+  })
+})

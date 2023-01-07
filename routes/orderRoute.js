@@ -10,7 +10,7 @@ const { route } = require("./productRoute");
 
 router.route("/order/new").post(isAuthenticated,authorizedRoles("user"),newOrder);
 
-router.route("/order/:id").get(isAuthenticated,getSingleOrder);
+router.route("/order/:id").get(isAuthenticated,authorizedRoles("user"),getSingleOrder);
 router.route("/orders/me").get(isAuthenticated,myOrders);
 router.route("/admin/orders").get(isAuthenticated,authorizedRoles("admin"),getAllOrders);
 router.route("/admin/order/:id").put(isAuthenticated,authorizedRoles("admin"),updateOrderStatus).delete(isAuthenticated,authorizedRoles("admin"),deleteOrder);
