@@ -9,7 +9,6 @@ const orderSchema = new mongoose.Schema({
     },
     orderItems: [
         {
-           
             price: {
                 type:Number,
                 required:true,
@@ -56,7 +55,7 @@ const orderSchema = new mongoose.Schema({
     orderStatus: {
         type: String,
         required: true,
-        default: "Initiated",
+        default: "initiated",
     },
     deliveredAt: {
         type: String,
@@ -66,6 +65,16 @@ const orderSchema = new mongoose.Schema({
     createdAt: {
         type: String,
         default: Date.now,
+    },
+
+    deliveryBoy: {
+        type: mongoose.Schema.ObjectId,
+        ref: "Location",
+    },
+    
+    store_location :{
+        type: mongoose.Schema.ObjectId,
+        ref: "Location",
     },
 
   //delivery boy section

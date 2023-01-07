@@ -18,6 +18,7 @@ exports.newOrder = catchAsyncError(async (req, res, next) => {
  
   if (!loc) return next(new ErrorHander("Location does not exist"));
   var itemsPrice = 0;
+  let store_location;
   for (const orderItem of orderItems) 
   {
     const product = await Product.findById(orderItem.product);
@@ -29,6 +30,7 @@ exports.newOrder = catchAsyncError(async (req, res, next) => {
           `Your quantity of this ${product.name} is more that is  not availble in our stock`
         )
       );
+    store_location = product.seller.store_location
     orderItem.price =
       (product.real_price - (product.real_price * product.discount) / 100) * orderItem.quantity;
     product.stock -= orderItem.quantity;
@@ -45,6 +47,7 @@ exports.newOrder = catchAsyncError(async (req, res, next) => {
     itemsPrice,
     totalPrice,
     customer: req.user._id,
+    store_location: store_location,
   });
   res.status(201).json({
     success: true,
