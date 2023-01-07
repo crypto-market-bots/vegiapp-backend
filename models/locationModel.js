@@ -4,7 +4,7 @@ const locationSchema = new mongoose.Schema({
     store_city_title :{
         type : String,
         trim:true,
-        required:[true,"enter the location title"]
+       
     },
     pincode :{
         type : Number,

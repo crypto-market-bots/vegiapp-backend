@@ -160,7 +160,7 @@ exports.deleteProducts = catchAsyncError(async (req, res, next) => {
 
 //Get all product
 exports.getallProduct = catchAsyncError(async (req, res) => {
-  const resultPerPage = 10;
+  const resultPerPage = 100;
   const ApiFeature = new ApiFeatures(Product.find(), req.query)
     .search()
     .filter()
@@ -287,9 +287,16 @@ exports.deleteReview = catchAsyncError(async (req, res, next) => {
 exports.getAllProductWithSellerId = catchAsyncError(async (req, res, next) => {
   req.body.seller = req.seller.id;
   const product = await Product.find({ seller: req.body.seller });
+  const resultPerPage = 200;
+  const ApiFeature = new ApiFeatures(Product.find({ seller: req.body.seller }), req.query)
+  .search()
+  .filter()
+  .pagination(resultPerPage);
+  console.log("ok");
+const products = await ApiFeature.query;
   res.status(200).json({
     success: true,
-    product,
+    products,
   });
 });
 
