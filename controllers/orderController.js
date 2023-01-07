@@ -2,41 +2,49 @@ const Order = require("../models/orderModel");
 const Product = require("../models/productModel");
 const ErrorHander = require("../utils/errorhander");
 const catchAsyncError = require("../middleware/catchAsyncError");
+const { report } = require("../routes/productRoute");
+const Location =  require("../models/locationModel");
 
 exports.newOrder = catchAsyncError(async (req, res, next) => {
-  console.log("hello");
-  const {
-    shippingInfo,
-    orderItems,
-    paymentInfo,
 
-    itemsPrice,
-    taxPrice,
-    shippingPrice,
-    totalPrice,
-  } = req.body;
+  const { shippingInfo_id, orderItems } = req.body;
 
-  if (
-    !shippingInfo ||
-    !orderItems ||
-    !paymentInfo ||
-    !itemsPrice ||
-    !taxPrice ||
-    !shippingPrice ||
-    !totalPrice
-  ) {
+  if (!shippingInfo_id || !orderItems || !taxPrice || !shippingPrice) {
     return next(new ErrorHander("All Fields Required", 400));
   }
+
+
+  const loc = await Location.findById(shippingInfo_id);
+ 
+  if (!loc) return next(new ErrorHander("Location does not exist"));
+  var itemsPrice = 0;
+  for (const orderItem of orderItems) 
+  {
+    const product = await Product.findById(orderItem.product);
+    if (!product)
+      return next(new ErrorHander("Some of your product is not exists"));
+    if (orderItem.quantity > product.stock)
+      return next(
+        new ErrorHander(
+          `Your quantity of this ${product.name} is more that is  not availble in our stock`
+        )
+      );
+    orderItem.price =
+      (product.real_price - (product.real_price * product.discount) / 100) * orderItem.quantity;
+    product.stock -= orderItem.quantity;
+
+    await product.save({ validateBeforeSave: false });
+    itemsPrice += orderItem.price;
+   
+  }
+  // taxPrice //shippingPrice
+ const totalPrice = itemsPrice;
   const order = await Order.create({
-    shippingInfo,
+    shippingInfo_id,
     orderItems,
-    paymentInfo,
     itemsPrice,
-    taxPrice,
-    shippingPrice,
     totalPrice,
-    paidAt: Date.now(),
-    user: req.user._id,
+    customer: req.user._id,
   });
   res.status(201).json({
     success: true,
@@ -44,8 +52,11 @@ exports.newOrder = catchAsyncError(async (req, res, next) => {
   });
 });
 
+
+
 //GET SINGLE order
 exports.getSingleOrder = catchAsyncError(async (req, res, next) => {
+
   const order = await Order.findById(req.params.id).populate(
     "user",
     "name email"
@@ -88,7 +99,6 @@ exports.getAllOrders = catchAsyncError(async (req, res, next) => {
 });
 
 //Update the order Status -- Admin
-
 exports.updateOrderStatus = catchAsyncError(async (req, res, next) => {
   const order = await Order.findById(req.params.id);
 
