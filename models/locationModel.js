@@ -1,6 +1,11 @@
 const mongoose = require("mongoose");
 // const validate =  require("validator")
 const locationSchema = new mongoose.Schema({
+    full_name :{
+        type : String,
+        trim:true,
+       
+    },
     store_city_title :{
         type : String,
         trim:true,
