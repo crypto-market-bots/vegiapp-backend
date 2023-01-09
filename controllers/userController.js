@@ -345,9 +345,9 @@ exports.getSingleUser = catchAsyncError(async (req, res, next) => {
 // Add Delivery Address
 
 exports.addDeliveryAddress = catchAsyncError(async (req, res, next) => {
-  const { pincode, address_line_1, address_line_2, location_phone_number } =
+  const { full_name,pincode, address_line_1, address_line_2, location_phone_number } =
     req.body;
-  if (pincode && address_line_1 && address_line_2 && location_phone_number) {
+  if (pincode && address_line_1 && address_line_2 && location_phone_number && full_name) {
     let user = await User.findById(req.user.id);
     if (!user) {
       return next(
@@ -358,10 +358,12 @@ exports.addDeliveryAddress = catchAsyncError(async (req, res, next) => {
       );
     }
     const newDeliveryAdd = await Location.create({
+      full_name:full_name,
       pincode: pincode,
       address_line_1: address_line_1,
       address_line_2: address_line_2,
       location_phone_number: location_phone_number,
+
     });
    console.log(newDeliveryAdd)
     req.user.delivery_address.push(newDeliveryAdd._id);

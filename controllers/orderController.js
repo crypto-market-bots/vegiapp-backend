@@ -6,6 +6,7 @@ const { report } = require("../routes/productRoute");
 const Location =  require("../models/locationModel");
 const Seller = require("../models/sellerModel");
 const User =  require("../models/userModel");
+
 exports.newOrder = catchAsyncError(async (req, res, next) => {
 
   const { shippingInfo_id, orderItems } = req.body;

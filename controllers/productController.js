@@ -41,8 +41,7 @@ exports.createProduct = catchAsyncError(async (req, res, next) => {
 
     return next(new ErrorHander("File format is incorrect.", 400));
   }
-
-  cloudinary.v2.uploader.upload(
+  catchAsyncError( cloudinary.v2.uploader.upload(
     file.tempFilePath,
     { folder: "ProductImages" },
     async (err, result) => {
@@ -54,13 +53,14 @@ exports.createProduct = catchAsyncError(async (req, res, next) => {
       console.log("hello ", imageone);
       req.body.public_image_id = public;
       req.body.image = imageone;
-      const product = await Product.create(req.body);
+      const product = await Product.create(req.body).then();
       res.status(201).json({
         success: true,
         product,
       });
     }
-  );
+  )
+  )
 });
 
 //for update the data for a particular product --Admin
@@ -139,10 +139,17 @@ exports.updateProduct = catchAsyncError(async (req, res, next) => {
 
 // Delete Product --Admin
 exports.deleteProducts = catchAsyncError(async (req, res, next) => {
-  const product = await Product.findById(req.params.id);
+  const product = await Product.findById(req.params.id).select('+seller');
   if (!product) {
     return next(new ErrorHander("Product Not Found", 404));
   }
+
+  console.log(product.seller);
+  console.log(req.seller.id);
+  if(product.seller  !=  req.seller.id){
+          return next(new ErrorHander("This is not Your Product So, Your are not able to delete this"));
+  }
+  // User.findById( req.user.id )
   req.body.public_image_id = product.public_image_id;
   cloudinary.v2.uploader.destroy(
     req.body.public_image_id,
