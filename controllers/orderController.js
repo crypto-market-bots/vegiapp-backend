@@ -6,6 +6,7 @@ const { report } = require("../routes/productRoute");
 const Location =  require("../models/locationModel");
 const Seller = require("../models/sellerModel");
 const User =  require("../models/userModel");
+
 exports.newOrder = catchAsyncError(async (req, res, next) => {
 
   const { shippingInfo_id, orderItems } = req.body;
@@ -52,6 +53,10 @@ exports.newOrder = catchAsyncError(async (req, res, next) => {
     totalPrice,
     customer: req.user._id,
     store_location: store_location,
+  }).then(()=>{
+    console.log("successfully")
+  }).catch((err)=>{
+    return next(new ErrorHander(err,400));
   });
   res.status(201).json({
     success: true,

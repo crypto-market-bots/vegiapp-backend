@@ -54,7 +54,11 @@ exports.createSection = catchAsyncError(async (req, res, next) => {
       req.body.public_image_id = public;
       req.body.image = imageone;
 
-      const section = await Section.create(req.body);
+      const section = await Section.create(req.body).then(()=>{
+        console.log("successfully")
+      }).catch((err)=>{
+        return next(new ErrorHander(err,400));
+      });
       res.status(200).json({
         success: true,
         section,

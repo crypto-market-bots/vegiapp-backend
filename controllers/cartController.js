@@ -83,7 +83,11 @@ exports.addItemToCart = catchAsyncError(async (req, res, next) => {
       //"hello2");
       
       req.body.user = req.user.id;
-      const cart = await Cart.create(req.body);
+      const cart = await Cart.create(req.body).then(()=>{
+        console.log("successfully")
+      }).catch((err)=>{
+        return next(new ErrorHander(err,400));
+      });
       res.status(200).json({
         success: true,
         cart,

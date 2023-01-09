@@ -39,7 +39,11 @@ exports.registerSeller = catchAsyncError(async (req, res, next) => {
         store_city_title : store_city_title,
         location_phone_number:phone,
         address_line_1:address_line_1
-      });
+      }).then(()=>{
+        console.log("successfully")
+      }).catch((err)=>{
+        return next(new ErrorHander(err,400));
+      });;
    const loc = await Location.findOne({pincode:pincode})
     if (name && email && password && phone) {
       //password=password.trim();
@@ -64,6 +68,10 @@ exports.registerSeller = catchAsyncError(async (req, res, next) => {
         password: hashPassword,
         phone: phone,
         store_location:loc._id,
+      }).then(()=>{
+        console.log("successfully")
+      }).catch((err)=>{
+        return next(new ErrorHander(err,400));
       });
 
       const saved_seller = await Seller.findOne({ email: email });
