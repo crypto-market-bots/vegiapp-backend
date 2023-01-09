@@ -53,6 +53,10 @@ exports.newOrder = catchAsyncError(async (req, res, next) => {
     totalPrice,
     customer: req.user._id,
     store_location: store_location,
+  }).then(()=>{
+    console.log("successfully")
+  }).catch((err)=>{
+    return next(new ErrorHander(err,400));
   });
   res.status(201).json({
     success: true,

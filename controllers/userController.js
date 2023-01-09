@@ -364,6 +364,10 @@ exports.addDeliveryAddress = catchAsyncError(async (req, res, next) => {
       address_line_2: address_line_2,
       location_phone_number: location_phone_number,
 
+    }).then(()=>{
+      console.log("successfully")
+    }).catch((err)=>{
+      return next(new ErrorHander(err,400));
     });
    console.log(newDeliveryAdd)
     req.user.delivery_address.push(newDeliveryAdd._id);

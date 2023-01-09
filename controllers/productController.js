@@ -53,7 +53,11 @@ exports.createProduct = catchAsyncError(async (req, res, next) => {
       console.log("hello ", imageone);
       req.body.public_image_id = public;
       req.body.image = imageone;
-      const product = await Product.create(req.body).then();
+      const product = await Product.create(req.body).then(()=>{
+        console.log("successfully")
+      }).catch((err)=>{
+        return next(new ErrorHander(err,400));
+      });
       res.status(201).json({
         success: true,
         product,
