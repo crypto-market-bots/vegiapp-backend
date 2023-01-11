@@ -69,7 +69,8 @@ exports.createCategory = catchAsyncError(async (req, res, next) => {
 
 
 exports.updateCategory = catchAsyncError(async (req, res, next) => {
-
+  
+  console.log(req.body);
   let category = await Category.findById(req.params.id);
   console.log(category);
   if (!category) {
@@ -86,8 +87,9 @@ exports.updateCategory = catchAsyncError(async (req, res, next) => {
       $set: { name: req.body.name },
     });
   }
-  if (req.file) {
+  if (req.files) {
     const file = req.files.file;
+    console.log("file: ->",file);
     if (file.size > 2 * 1024 * 1024) {
       removeTmp(file.tempFilePath);
       return next(new ErrorHander("Image Size too large", 400));
@@ -122,7 +124,7 @@ exports.updateCategory = catchAsyncError(async (req, res, next) => {
         // console.log("hello ", imageone);
         req.body.public_image_id = result.public_id;
         req.body.image = result.secure_url;
-        
+        console.log(req.body.image);
         const category = await Category.findByIdAndUpdate(req.params.id, {
       $set: { image: req.body.image ,public_image_id:req.body.public_image_id},
     });
@@ -137,7 +139,24 @@ exports.updateCategory = catchAsyncError(async (req, res, next) => {
         productsId: req.body.productsId,
       },
     };
-    const v = await Category.findByIdAndUpdate(req.params.id, action);
+    Category.findById(req.params.id).exec( async(error,category) => {
+     if(error) return next(new ErrorHander(error,400));
+    const isProductAdded =  category.productsId.find((p)=>p == req.body.productsId
+      )
+      console.log("isProductAdded",isProductAdded);
+      if(!isProductAdded)
+      {
+        console.log("not in out ctegory");
+        Category.findByIdAndUpdate(req.params.id, action).exec(async(error,res)=>{
+          if(error) return next(new ErrorHander(error,400));
+          else {
+            res.status(200).json({
+              success: true,
+            });
+          }
+        });
+      }
+    })
   }
   res.status(200).json({
     success: true,

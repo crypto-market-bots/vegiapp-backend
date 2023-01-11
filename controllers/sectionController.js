@@ -87,7 +87,7 @@ exports.updateSection = catchAsyncError(async (req, res, next) => {
       $set: { name: req.body.name },
     });
   }
-  if (req.file) {
+  if (req.files) {
     const file = req.files.file;
     if (file.size > 2 * 1024 * 1024) {
       removeTmp(file.tempFilePath);
@@ -138,7 +138,25 @@ exports.updateSection = catchAsyncError(async (req, res, next) => {
         productsId: req.body.productsId,
       },
     };
-    const v = await Section.findByIdAndUpdate(req.params.id, action);
+    Section.findById(req.params.id).exec( async(error,section) => {
+      if(error) return next(new ErrorHander(error,400));
+     const isProductAdded =  section.productsId.find((p)=>p == req.body.productsId
+       )
+       console.log("isProductAdded",isProductAdded);
+       if(!isProductAdded)
+       {
+         console.log("not in out section");
+         Section.findByIdAndUpdate(req.params.id, action).exec(async(error,res)=>{
+           if(error) return next(new ErrorHander(error,400));
+           else {
+             res.status(200).json({
+               success: true,
+             });
+           }
+         });
+       }
+     })
+    // const v = await Section.findByIdAndUpdate(req.params.id, action);
   }
   res.status(200).json({
     success: true,
