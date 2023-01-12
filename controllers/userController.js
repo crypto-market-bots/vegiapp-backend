@@ -367,7 +367,7 @@ exports.addDeliveryAddress = catchAsyncError(async (req, res, next) => {
     }).then((res)=>{
 
       req.user.delivery_address.push(res._id);
-      console.log(res._id)
+    
      
       req.user.save();
     }).catch((err)=>{
