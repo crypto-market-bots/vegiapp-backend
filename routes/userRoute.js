@@ -8,7 +8,7 @@ const {otpVerification} = require("../middleware/otpVerfications")
 const router=express.Router();
 
 router.route("/user/register").post(otpVerification, registerUser);
-router.route("/valid-token").get(isAuthenticated,checkValidity);
+
 router.route("/user/loginEmail").post(loginUserEmail);
 router.route("/user/loginPhone").post(otpVerification , loginUserPhone);
 router.route("/user/logout").get(logout);
