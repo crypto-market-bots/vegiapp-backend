@@ -1,4 +1,5 @@
 const express=require("express");
+const { checkValidity } = require("../Common/check_token_validity");
 //const { getSingleProduct } = require("../controllers/productController");
 const { registerUser, loginUserPhone, logout, sendUserPasswordResetEmail, UserPasswordReset, getUserDetails, changeUserPassword  , updateUserProfile, getAllUser, getSingleUser, loginUserEmail, addDeliveryAddress, getAllLocation, getAllDeliveryLocation} =  require("../controllers/userController");
 const { isAuthenticated ,authorizedRoles,verifyExistenceUser} = require("../middleware/auth");
@@ -7,6 +8,7 @@ const {otpVerification} = require("../middleware/otpVerfications")
 const router=express.Router();
 
 router.route("/user/register").post(otpVerification, registerUser);
+router.route("/valid-token").get(isAuthenticated,checkValidity);
 router.route("/user/loginEmail").post(loginUserEmail);
 router.route("/user/loginPhone").post(otpVerification , loginUserPhone);
 router.route("/user/logout").get(logout);
