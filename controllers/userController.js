@@ -257,7 +257,7 @@ exports.UserPasswordReset = catchAsyncError(async (req, res, next) => {
 //user detils
 
 exports.getUserDetails = catchAsyncError(async (req, res, next) => {
-  const user = await User.findById(req.user.id);
+  const user = await User.findById(req.user.id).populate( {path:'current_store_location'});
 
   res.status(200).json({
     success: true,
