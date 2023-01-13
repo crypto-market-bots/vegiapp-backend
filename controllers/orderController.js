@@ -53,11 +53,16 @@ exports.newOrder = catchAsyncError(async (req, res, next) => {
     totalPrice,
     customer: req.user._id,
     store_location: store_location,
-  }).then(()=>{
-    console.log("successfully")
+  }).then(async(t)=>{
+    // console.log(t)
+    res.status(201).json({
+      success: true,
+      orderDetail:t,
+    });
   }).catch((err)=>{
     return next(new ErrorHander(err,400));
   });
+  console.log(order);
   res.status(201).json({
     success: true,
     order,
@@ -70,7 +75,7 @@ exports.newOrder = catchAsyncError(async (req, res, next) => {
 exports.getSingleOrder = catchAsyncError(async (req, res, next) => {
 
   const order = await Order.findById(req.params.id).populate(
-    "orderItems.product"
+    "orderItems.product shippingInfo_id"
   ).select('-orderItems.product.stock_alert')
   if (!order) {
     return next(new ErrorHander("Order is not find by this id", 404));
