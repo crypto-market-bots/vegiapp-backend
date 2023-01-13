@@ -3,7 +3,7 @@ dotenv.config({ path: "./Config/config.env" });
 const Razorpay = require('razorpay')
 const PaymentDetail =  require('../models/payment-detail')
 const Product = require("../models/productModel")
-const { nanoid } = require("nanoid");
+import { nanoid } from 'nanoid'
 
 let razorPayInstance = new Razorpay({
 	key_id: process.env.RAZORPAY_KEY_ID,

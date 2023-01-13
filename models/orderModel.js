@@ -88,7 +88,7 @@ const orderSchema = new mongoose.Schema({
 
     razorpay_receipt_id  :{
         type: String,
-        required:true,
+      
     },
 
     payment_id : {
