@@ -76,7 +76,28 @@ const orderSchema = new mongoose.Schema({
         type: mongoose.Schema.ObjectId,
         ref: "Location",
     },
+    
+    trans_status :{
+        type: String,
+    },
 
+    order_id :{
+        type: String,
+        required:true,
+    },
+
+    razorpay_receipt_id  :{
+        type: String,
+      
+    },
+
+    payment_id : {
+        type: String,
+    },
+    
+    signature :{
+        type:String,
+    }
   //delivery boy section
   //upi section
 

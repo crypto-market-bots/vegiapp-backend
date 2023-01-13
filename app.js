@@ -41,6 +41,7 @@ app.use("/api/v4", seller);
 app.use("/api/v4", common);
 app.use("/api/v4", category);
 app.use("/api/v4", favourite);
+
 app.use("/api/v4",section);
 //middleware for errors
 app.use(errorMiddleware);
