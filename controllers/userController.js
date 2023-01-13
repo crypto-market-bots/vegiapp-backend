@@ -257,7 +257,7 @@ exports.UserPasswordReset = catchAsyncError(async (req, res, next) => {
 //user detils
 
 exports.getUserDetails = catchAsyncError(async (req, res, next) => {
-  const user = await User.findById(req.user.id);
+  const user = await User.findById(req.user.id).populate( {path:'current_store_location'});
 
   res.status(200).json({
     success: true,
@@ -364,14 +364,15 @@ exports.addDeliveryAddress = catchAsyncError(async (req, res, next) => {
       address_line_2: address_line_2,
       location_phone_number: location_phone_number,
 
-    }).then(()=>{
-      console.log("successfully")
+    }).then((res)=>{
+
+      req.user.delivery_address.push(res._id);
+    
+     
+      req.user.save();
     }).catch((err)=>{
       return next(new ErrorHander(err,400));
     });
-   console.log(newDeliveryAdd)
-    req.user.delivery_address.push(newDeliveryAdd._id);
-    req.user.save();
 
     res.status(200).json({
       success: true,
@@ -393,3 +394,8 @@ exports.getAllDeliveryLocation = catchAsyncError(async(req,res,next)=>{
     user
   })
 })
+
+
+
+
+

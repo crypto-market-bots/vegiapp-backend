@@ -121,7 +121,7 @@ exports.verifyOrder = catchAsyncError(async (req, res, next) => {
 exports.getSingleOrder = catchAsyncError(async (req, res, next) => {
 
   const order = await Order.findById(req.params.id).populate(
-    "orderItems.product"
+    "orderItems.product shippingInfo_id"
   ).select('-orderItems.product.stock_alert')
   if (!order) {
     return next(new ErrorHander("Order is not find by this id", 404));
