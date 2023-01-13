@@ -49,7 +49,11 @@ exports.addItemToFavourite = catchAsyncError(async (req, res, next) => {
       //if cart not exists then create a new cart
       //"hello2");
       req.body.user = req.user.id;
-      const fvourite = await Favourite.create(req.body);
+      const fvourite = await Favourite.create(req.body).then(()=>{
+        console.log("successfully")
+      }).catch((err)=>{
+        return next(new ErrorHander(err,400));
+      });
       res.status(200).json({
         success: true,
         fvourite,

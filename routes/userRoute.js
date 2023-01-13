@@ -1,6 +1,6 @@
 const express=require("express");
 //const { getSingleProduct } = require("../controllers/productController");
-const { registerUser, loginUserPhone, logout, sendUserPasswordResetEmail, UserPasswordReset, getUserDetails, changeUserPassword  , updateUserProfile, getAllUser, getSingleUser, loginUserEmail, addDeliveryAddress} =  require("../controllers/userController");
+const { registerUser, loginUserPhone, logout, sendUserPasswordResetEmail, UserPasswordReset, getUserDetails, changeUserPassword  , updateUserProfile, getAllUser, getSingleUser, loginUserEmail, addDeliveryAddress, getAllLocation, getAllDeliveryLocation} =  require("../controllers/userController");
 const { isAuthenticated ,authorizedRoles,verifyExistenceUser} = require("../middleware/auth");
 const {otpVerification} = require("../middleware/otpVerfications")
 
@@ -15,7 +15,7 @@ router.route("/user/reset-password/:id/:token").put(UserPasswordReset);
 router.route("/user/me").get(isAuthenticated,getUserDetails);
 router.route("/user/changedPassword").put( isAuthenticated, changeUserPassword);
 router.route("/user/addDeliveryAddress").post( isAuthenticated, authorizedRoles('user'), addDeliveryAddress);
-
+router.route("/user/getAllDeliveryLocation").get(isAuthenticated, authorizedRoles('user'),getAllDeliveryLocation);
 //router.route("/user/Update User profile").put(isAuthenticated,updateUserProfile);
 
 // router.route("/admin/users").get(isAuthenticated,authorizedRoles('admin'),getAllUser);

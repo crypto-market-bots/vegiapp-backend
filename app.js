@@ -26,7 +26,7 @@ const seller = require("./routes/sellerRoute");
 const common = require('./routes/common');
 const category = require('./routes/categoryRoute');
 const favourite =  require('./routes/favouriteRoute');
-const payment = require('./routes/paymentRoute')
+const section = require("./routes/sectionRoute");
 const { urlencoded } = require("body-parser");
 // const product_route = require("./routes/productRoute")
 console.log(__dirname);
@@ -41,8 +41,8 @@ app.use("/api/v4", seller);
 app.use("/api/v4", common);
 app.use("/api/v4", category);
 app.use("/api/v4", favourite);
-app.use("/api/v4/payment/", payment)
 
+app.use("/api/v4",section);
 //middleware for errors
 app.use(errorMiddleware);
 

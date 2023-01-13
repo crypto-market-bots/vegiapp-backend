@@ -7,7 +7,7 @@ const jwt = require("jsonwebtoken");
 const { transporter, use } = require("../Config/email");
 const sendEmail = require("../utils/sendEmail");
 dotenv.config({ path: "../Config/config.env" });
-const Location =  require("../models/locationModel")
+const Location = require("../models/locationModel");
 const accountSid = process.env.ACCOUNT_SID;
 const authToken = process.env.AUTH_TOKEN;
 const client = require("twilio")(accountSid, authToken);
@@ -18,16 +18,11 @@ const Seller = require("../models/sellerModel");
 const smsKey = process.env.SMS_SECRET_KEY;
 const twilioNum = process.env.TWILIO_PHONE_NUMBER;
 
-
-
-
-
-
-
 //register the user
 
 exports.registerUser = catchAsyncError(async (req, res, next) => {
-  const { name, email, password, phone } = req.body;
+  const { name, email, password, phone, pincode} = req.body;
+  if(!name || !email || !password || !phone || !pincode) return next(new ErrorHander("all fields are required"));
   const user = await User.findOne({
     $or: [{ email: email }, { phone: phone }],
   });
@@ -42,15 +37,19 @@ exports.registerUser = catchAsyncError(async (req, res, next) => {
       let trimmedpassword = password;
       trimmedpassword = trimmedpassword.trim();
       //trimmedpassword);
-      if (trimmedpassword.length < 6) { 
+      if (trimmedpassword.length < 6) {
         return next(
           new ErrorHander(
             "password should be greater than or equal to 6 Characters",
             400
           )
         );
-        
       }
+      const store_location = await Location.findOne({is_store:true, pincode:pincode})
+      if(!store_location){
+        return next( new ErrorHander("Please provide a valid pincode for store", 400));
+      }
+
       const salt = await bcrypt.genSalt(10);
       const hashPassword = await bcrypt.hash(password, salt);
 
@@ -59,6 +58,7 @@ exports.registerUser = catchAsyncError(async (req, res, next) => {
         email: email,
         password: hashPassword,
         phone: phone,
+        current_store_location : store_location._id,
       });
 
       const saved_user = await User.findOne({ email: email });
@@ -84,28 +84,24 @@ exports.registerUser = catchAsyncError(async (req, res, next) => {
   }
 });
 
-
 //Login the user with phone number
 exports.loginUserPhone = catchAsyncError(async (req, res, next) => {
-  
-   const {phone} = req.body;
+  const { phone } = req.body;
 
-   const user = await User.findOne({ phone });
+  const user = await User.findOne({ phone });
 
-   if(user){
-    const token = jwt.sign(
-      { userID: user._id },
-      process.env.JWT_SECRET_KEY,
-      { expiresIn: "5d" });
+  if (user) {
+    const token = jwt.sign({ userID: user._id }, process.env.JWT_SECRET_KEY, {
+      expiresIn: "5d",
+    });
 
-      res.status(200).json({ success: true, message: "Login Successful", token: token });
-    
-   }
-   else  {
+    res
+      .status(200)
+      .json({ success: true, message: "Login Successful", token: token });
+  } else {
     return next(new ErrorHander("You are not a registered user", 400));
-   }
+  }
 });
-
 
 //Login the user
 
@@ -124,10 +120,11 @@ exports.loginUserEmail = catchAsyncError(async (req, res, next) => {
           process.env.JWT_SECRET_KEY,
           { expiresIn: "5d" }
         );
-       
+
         //res.send({"status": "success","message":"LOGIN sucessful","token": token})
         res
-          .status(200).json({ success: true, message: "Login Successful", token: token });
+          .status(200)
+          .json({ success: true, message: "Login Successful", token: token });
       } else {
         return next(new ErrorHander("Email or password is not valid", 400));
       }
@@ -273,13 +270,44 @@ exports.getUserDetails = catchAsyncError(async (req, res, next) => {
 //not completed
 exports.changeUserPassword = catchAsyncError(async (req, res, next) => {
   const { old_password, password, confirm_password } = req.body;
-
+  if(!old_password || !password || !confirm_password) return next(new ErrorHander("All fields are required"))
   const user = await User.findById(req.user.id).select("+password");
+  if (!user) next(new ErrorHander("User does not exists", 400));
+  // const isPasswordMatched = await user.comparePassword(old_password);
+  const isPasswordMatched = await bcrypt.compare(old_password, user.password);
+  if (!isPasswordMatched) {
+    return next(new ErrorHander("Old_Password does'n match", 400));
+  }
+  if(password == old_password) return next(new ErrorHander("Current Password must not be same as new password"));
+  if (password != confirm_password) {
+    next(new ErrorHander("Passowrd and Confirm Password is mathch", 400));
 
-  const isPasswordMatched = await user.comparePassword(old_password);
+  }
+ 
+  if (isPasswordMatched) {
+    let trimmedpassword = password;
+    trimmedpassword = trimmedpassword.trim();
+    //trimmedpassword);
+    if (trimmedpassword.length < 6) {
+      return next(
+        new ErrorHander(
+          "password should be greater than or equal to 6 Characters",
+          400
+        )
+      );
+    }
+    const salt = await bcrypt.genSalt(10);
+    const hashPassword = await bcrypt.hash(password, salt);
+    await User.findByIdAndUpdate(user._id, {
+      $set: { password: hashPassword },
+    });
 
+    res.status(200).json({
+      success: true,
+      message: "passord Change sucessfully",
+    });
+  }
   //isPasswordMatched);
-  res.status(200);
 });
 
 //Updated User Profile
@@ -314,34 +342,54 @@ exports.getSingleUser = catchAsyncError(async (req, res, next) => {
 
 //Delete the User
 
-
 // Add Delivery Address
 
 exports.addDeliveryAddress = catchAsyncError(async (req, res, next) => {
-
-  const { pincode, address_line_1, address_line_2, location_phone_number } = req.body;
-   if(pincode && address_line_1 && address_line_2 && location_phone_number){
-
+  const { full_name,pincode, address_line_1, address_line_2, location_phone_number } =
+    req.body;
+  if (pincode && address_line_1 && address_line_2 && location_phone_number && full_name) {
     let user = await User.findById(req.user.id);
     if (!user) {
-    	return next(new ErrorHander(`User does not exist with this Id: ${req.params.id}`, 404));
-	}
-	const newDeliveryAdd = await Location.create({
-		pincode: pincode,
-		address_line_1 : address_line_1,
-		address_line_2 : address_line_2,
-		location_phone_number:location_phone_number
-		});
-	
-	req.user.delivery_address.push(newDeliveryAdd._id);
-	req.user.save();
+      return next(
+        new ErrorHander(
+          `User does not exist with this Id: ${req.params.id}`,
+          404
+        )
+      );
+    }
+    const newDeliveryAdd = await Location.create({
+      full_name:full_name,
+      pincode: pincode,
+      address_line_1: address_line_1,
+      address_line_2: address_line_2,
+      location_phone_number: location_phone_number,
 
-	res.status(200).json({
-		success: true,
-	});
-  	}
-	else {
-		return next(new ErrorHander("all fields are required",400))
-	}
+    }).then(()=>{
+      console.log("successfully")
+    }).catch((err)=>{
+      return next(new ErrorHander(err,400));
+    });
+   console.log(newDeliveryAdd)
+    req.user.delivery_address.push(newDeliveryAdd._id);
+    req.user.save();
+
+    res.status(200).json({
+      success: true,
+    });
+  } else {
+    return next(new ErrorHander("all fields are required", 400));
+  }
 });
-        
+
+
+
+exports.getAllDeliveryLocation = catchAsyncError(async(req,res,next)=>{
+  let user = await User.findById(req.user.id).populate([{
+    path: "delivery_address"
+    , strictPopulate: false 
+  }]);;
+  res.status(200).json({
+    success:true,
+    user
+  })
+})

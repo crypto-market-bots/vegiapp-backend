@@ -2,41 +2,61 @@ const Order = require("../models/orderModel");
 const Product = require("../models/productModel");
 const ErrorHander = require("../utils/errorhander");
 const catchAsyncError = require("../middleware/catchAsyncError");
+const { report } = require("../routes/productRoute");
+const Location =  require("../models/locationModel");
+const Seller = require("../models/sellerModel");
+const User =  require("../models/userModel");
 
 exports.newOrder = catchAsyncError(async (req, res, next) => {
-  console.log("hello");
-  const {
-    shippingInfo,
-    orderItems,
-    paymentInfo,
 
-    itemsPrice,
-    taxPrice,
-    shippingPrice,
-    totalPrice,
-  } = req.body;
+  const { shippingInfo_id, orderItems } = req.body;
 
-  if (
-    !shippingInfo ||
-    !orderItems ||
-    !paymentInfo ||
-    !itemsPrice ||
-    !taxPrice ||
-    !shippingPrice ||
-    !totalPrice
-  ) {
+  if (!shippingInfo_id || !orderItems ) {
     return next(new ErrorHander("All Fields Required", 400));
   }
+
+
+  const loc = await Location.findById(shippingInfo_id);
+ 
+  if (!loc) return next(new ErrorHander("Location does not exist"));
+  var itemsPrice = 0;
+  let store_location;
+  for (const orderItem of orderItems) 
+  {
+    const product = await Product.findById(orderItem.product).select("+seller");
+    if (!product)
+      return next(new ErrorHander("Some of your product is not exists"));
+    if (orderItem.quantity > product.stock)
+      return next(
+        new ErrorHander(
+          `Your quantity of this ${product.name} is more that is  not availble in our stock`
+        )
+      );
+      console.log("the ",product.seller);
+      const seller= await Seller.findById(product.seller);
+      console.log("the ",seller.store_location);
+    store_location = seller.store_location;
+    orderItem.price =
+      (product.real_price - (product.real_price * product.discount) / 100) * orderItem.quantity;
+    product.stock -= orderItem.quantity;
+
+    await product.save({ validateBeforeSave: false });
+    itemsPrice += orderItem.price;
+   
+  }
+  // taxPrice //shippingPrice
+ const totalPrice = itemsPrice;
   const order = await Order.create({
-    shippingInfo,
+    shippingInfo_id,
     orderItems,
-    paymentInfo,
     itemsPrice,
-    taxPrice,
-    shippingPrice,
     totalPrice,
-    paidAt: Date.now(),
-    user: req.user._id,
+    customer: req.user._id,
+    store_location: store_location,
+  }).then(()=>{
+    console.log("successfully")
+  }).catch((err)=>{
+    return next(new ErrorHander(err,400));
   });
   res.status(201).json({
     success: true,
@@ -44,20 +64,30 @@ exports.newOrder = catchAsyncError(async (req, res, next) => {
   });
 });
 
+
+
 //GET SINGLE order
 exports.getSingleOrder = catchAsyncError(async (req, res, next) => {
-  const order = await Order.findById(req.params.id).populate(
-    "user",
-    "name email"
-  );
 
+  const order = await Order.findById(req.params.id).populate(
+    "orderItems.product"
+  ).select('-orderItems.product.stock_alert')
   if (!order) {
     return next(new ErrorHander("Order is not find by this id", 404));
   }
-  res.status(200).json({
-    success: true,
-    order,
-  });
+  // console.log(order.customer," j");
+  // console.log(req.user._id," j");
+  const customer = await User.findById(order.customer);
+  const loggedUser =  await User.findById(req.user._id);
+  console.log(customer.email  );
+  console.log(loggedUser.email);
+  if(customer.email === loggedUser.email){
+    res.status(200).json({
+      success: true,
+      order,
+    });
+  }
+  else return next(new ErrorHander("This is not your order",400));
 });
 
 //Get all the users for looged users
@@ -88,7 +118,6 @@ exports.getAllOrders = catchAsyncError(async (req, res, next) => {
 });
 
 //Update the order Status -- Admin
-
 exports.updateOrderStatus = catchAsyncError(async (req, res, next) => {
   const order = await Order.findById(req.params.id);
 
