@@ -65,9 +65,9 @@ exports.verifyOrder = catchAsyncError(async (req, res, next) => {
 
 	if(expectedSignature === req.body.razorpay_signature) {
 		await PaymentDetail.findOneAndUpdate(
-			{ orderId: req.body.razorpay_order_id },
+			{ order_id: req.body.razorpay_order_id },
 			{
-				paymentId: req.body.razorpay_payment_id,
+				payment_id: req.body.razorpay_payment_id,
 				signature: req.body.razorpay_signature,
 				trans_status: "paid"
 			});

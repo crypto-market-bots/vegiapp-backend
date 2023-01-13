@@ -1,14 +1,14 @@
 const express=require("express");
 const router=express.Router();
 
-const { newOrder, getSingleOrder, myOrders, getAllOrders, updateOrderStatus, deleteOrder } = require("../controllers/orderController");
+const { newOrder, getSingleOrder, myOrders, getAllOrders, updateOrderStatus, deleteOrder, verifyOrder } = require("../controllers/orderController");
 const { isAuthenticated, authorizedRoles } = require("../middleware/auth");
 const { route } = require("./productRoute");
 
 //const { route } = require("./productRoute");
 
-
-router.route("/order/new").post(isAuthenticated,authorizedRoles("user"),newOrder);
+router.route("/order/new").post(isAuthenticated, authorizedRoles("user"), newOrder);
+router.route("/order/verifyOrder").post(isAuthenticated, authorizedRoles("user"), verifyOrder);
 
 router.route("/order/:id").get(isAuthenticated,authorizedRoles("user"),getSingleOrder);
 router.route("/orders/me").get(isAuthenticated,myOrders);

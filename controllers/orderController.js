@@ -6,9 +6,15 @@ const { report } = require("../routes/productRoute");
 const Location =  require("../models/locationModel");
 const Seller = require("../models/sellerModel");
 const User =  require("../models/userModel");
+const Razorpay = require('razorpay')
+
+
+let razorPayInstance = new Razorpay({
+	key_id: process.env.RAZORPAY_KEY_ID,
+	key_secret: process.env.RAZORPAY_KEY_SECRET
+})
 
 exports.newOrder = catchAsyncError(async (req, res, next) => {
-
   const { shippingInfo_id, orderItems } = req.body;
 
   if (!shippingInfo_id || !orderItems ) {
@@ -32,9 +38,8 @@ exports.newOrder = catchAsyncError(async (req, res, next) => {
           `Your quantity of this ${product.name} is more that is  not availble in our stock`
         )
       );
-      console.log("the ",product.seller);
-      const seller= await Seller.findById(product.seller);
-      console.log("the ",seller.store_location);
+    
+    const seller= await Seller.findById(product.seller);
     store_location = seller.store_location;
     orderItem.price =
       (product.real_price - (product.real_price * product.discount) / 100) * orderItem.quantity;
@@ -45,25 +50,71 @@ exports.newOrder = catchAsyncError(async (req, res, next) => {
    
   }
   // taxPrice //shippingPrice
- const totalPrice = itemsPrice;
-  const order = await Order.create({
-    shippingInfo_id,
-    orderItems,
-    itemsPrice,
-    totalPrice,
-    customer: req.user._id,
-    store_location: store_location,
-  }).then(()=>{
-    console.log("successfully")
-  }).catch((err)=>{
-    return next(new ErrorHander(err,400));
-  });
-  res.status(201).json({
-    success: true,
-    order,
-  });
+  
+    const totalPrice = itemsPrice;
+
+  	orderRazorpayParams = {
+		amount: req.totalPrice * 100,
+		currency: "INR",
+		receipt: nanoid(),
+		payment_capture: "1"
+	}
+
+	razorPayInstance.orders.create(orderParams)
+	.then(async (response) => {
+		const razorpayKeyId = process.env.RAZORPAY_KEY_ID
+		// Save orderId and other payment details
+		const order = await Order.create({
+			
+			shippingInfo_id,
+			orderItems,
+			itemsPrice,
+			totalPrice,
+			customer: req.user._id,
+			store_location: store_location,
+
+			//razorpay 
+			order_id: response.id,
+			receipt_id: response.receipt,
+			trans_status: response.status,
+		})
+        res.status(201).json({
+			success:true,
+			order,
+			razorpayKeyId,
+        });
+
+	}).catch((err) => {
+		if (err){
+            return next(new ErrorHander("Try Again Something is wrong"));
+        }
+	})
+  
 });
 
+exports.verifyOrder = catchAsyncError(async (req, res, next) => {
+	body=req.body.razorpay_order_id + "|" + req.body.razorpay_payment_id;
+	let crypto = require("crypto");
+	let expectedSignature = crypto.createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+							.update(body.toString())
+							.digest('hex');
+
+	if(expectedSignature === req.body.razorpay_signature) {
+		await Order.findOneAndUpdate(
+			{ order_id: req.body.razorpay_order_id },
+			{
+				payment_id: req.body.razorpay_payment_id,
+				signature: req.body.razorpay_signature,
+				trans_status: "paid"
+			});
+            res.status(200).json({
+                success: true,
+                message: "order placed successfully"
+              });
+	} else {
+		return next(new ErrorHander("Invalid Signature !"));
+	}
+});
 
 
 //GET SINGLE order
