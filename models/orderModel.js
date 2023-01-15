@@ -69,7 +69,7 @@ const orderSchema = new mongoose.Schema({
 
     deliveryBoy: {
         type: mongoose.Schema.ObjectId,
-        ref: "Location",
+        ref: "User",
     },
     
     store_location :{
