@@ -31,10 +31,13 @@ exports.signleOrderDelivery = catchAsyncError( async(req,res,next) => {
 
 exports.pickUpOrder = catchAsyncError(async (req, res, next) => {
     let order = await Order.findById(req.params.id)
+    if (!order) {
+        return next(new ErrorHander("Order is not find by this id", 404));
+      }
     if (order.deliveryBoy){
         return next(new ErrorHander("order is already picked up by some other delivery boy"));
     }
-    order.status = 'out-for-delivery'
+    order.orderStatus = 'out-for-delivery'
     order.deliveryBoy = req.user
     order.save()
 
@@ -43,3 +46,23 @@ exports.pickUpOrder = catchAsyncError(async (req, res, next) => {
         message:"order picked up sucessfully",
     })
 });
+
+
+
+exports.deliveryOrder = catchAsyncError(async(req,res,next)=>{
+    let order = await Order.findById(req.params.id)
+    if (!order) {
+        return next(new ErrorHander("Order is not find by this id", 404));
+      }
+      let date_obj = new Date();
+      order.orderStatus = 'delivered'
+      order.deliveredDate = `${("0" + date_obj.getDate()).slice(-2)}-${("0" + (date_obj.getMonth() + 1)).slice(-2)}-${date_obj.getFullYear()}`,
+      order.deliveredTime = `${date_obj.getHours()}:${date_obj.getMinutes()}`
+      order.save()
+
+    res.status(200).json({ 
+        success:true, 
+        message:"order delivered sucessfully",
+    })
+
+})
