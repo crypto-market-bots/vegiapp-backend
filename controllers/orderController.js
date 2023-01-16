@@ -58,7 +58,7 @@ exports.newOrder = catchAsyncError(async (req, res, next) => {
     receipt: uid,
     payment_capture: "1",
   };
-
+  let date_obj = new Date();
   razorPayInstance.orders
     .create(orderRazorpayParams)
     .then(async (response) => {
@@ -76,6 +76,8 @@ exports.newOrder = catchAsyncError(async (req, res, next) => {
         order_id: response.id,
         receipt_id: response.receipt,
         trans_status: response.status,
+        createdDate:`${("0" + date_obj.getDate()).slice(-2)}-${("0" + (date_obj.getMonth() + 1)).slice(-2)}-${date_obj.getFullYear()}`,
+        createdTime:`${date_obj.getHours()}:${date_obj.getMinutes()}`
       })
       res.status(201).json({
         success: true,
