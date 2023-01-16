@@ -7,7 +7,7 @@ const { isAuthenticated, authorizedRoles } = require("../middleware/auth");
 const { route } = require('./productRoute');
 
 
-router.route('/user/cart/addtocart').post(isAuthenticated,authorizedRoles('user'),addItemToCart);
-router.route('/user/cart/removeitemfromcart').post(isAuthenticated,authorizedRoles('user'),removeItemFromCart);
-router.route('/user/cart/cartAllProduct').get(isAuthenticated,authorizedRoles('user'),cartAllProduct);
+router.route('/user/cart/addtocart').post(isAuthenticated,authorizedRoles('user','delivery'),addItemToCart);
+router.route('/user/cart/removeitemfromcart').post(isAuthenticated,authorizedRoles('user','delivery'),removeItemFromCart);
+router.route('/user/cart/cartAllProduct').get(isAuthenticated,authorizedRoles('user','delivery'),cartAllProduct);
 module.exports = router;

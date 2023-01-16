@@ -57,16 +57,23 @@ const orderSchema = new mongoose.Schema({
         required: true,
         default: "initiated",
     },
-    deliveredAt: {
+    deliveredDate: {
         type: String,
-        default: Date.now,
+        
     },
 
-    createdAt: {
-        type: String,
-        default: Date.now,
+    deliveredTime:{
+         type:String
     },
 
+    createdDate: {
+        type: String,
+       
+    },
+       
+    createdTime:{
+        type:String
+    },
     deliveryBoy: {
         type: mongoose.Schema.ObjectId,
         ref: "User",
