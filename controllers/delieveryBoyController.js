@@ -66,3 +66,14 @@ exports.deliveryOrder = catchAsyncError(async(req,res,next)=>{
     })
 
 })
+
+
+
+
+exports.pickOrders = catchAsyncError(async(req,res,next)=>{
+   const PickedOrders = await Order.find({deliveryBoy : req.user._id , orderStatus: "out-for-delivery", trans_status:"paid"}).populate("orderItems.product shippingInfo_id");
+    res.status(200).json({
+        success:true,
+        PickedOrders
+    })
+})
