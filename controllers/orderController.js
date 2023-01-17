@@ -143,7 +143,7 @@ exports.getSingleOrder = catchAsyncError(async (req, res, next) => {
 
 //Get all the users for looged users
 exports.myOrders = catchAsyncError(async (req, res, next) => {
-  const orders = await Order.find({ user: req.user._id });
+  const orders = await Order.find({ customer: req.user._id }).populate("orderItems.product shippingInfo_id");
 
   res.status(200).json({
     success: true,
