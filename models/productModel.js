@@ -34,12 +34,26 @@ const productSchema = new mongoose.Schema({
     type:String,
     required: [true,"enter the image"]
   },
+  public_image_id: {
+    type:String,
+    required : [true,"enter the public the image id"]
+  },
   categories: [
     {
       type: String,
       required: [true, "enter the product category"],
     },
   ],
+  section: [
+    {
+      type: String,
+      required: [true, "enter the product section"],
+    },
+  ],
+  product_type:{
+    type: String,
+    required: [true, "Please enter the your product_type like as vegetble,fruit"],
+  },
   stock: {
     type: Number,
     required: [true, "enter the product stock"],
@@ -88,12 +102,19 @@ const productSchema = new mongoose.Schema({
   hide_item: {
     type: Boolean,
     default: false,
-    select: false
   },
   out_of_stock: {
     type: Boolean,
     default: false,
   },
+  stock_alert: {
+    type:Number,
+    required: [true,"enter the stock alert"]
+  },
+  quantity:{
+    type:Number,
+    required:[true,"enter the quantity"]
+  }
   //section
   //count
 });

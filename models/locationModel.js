@@ -1,9 +1,15 @@
 const mongoose = require("mongoose");
 // const validate =  require("validator")
 const locationSchema = new mongoose.Schema({
+    full_name :{
+        type : String,
+        trim:true,
+       
+    },
     store_city_title :{
         type : String,
         trim:true,
+       
     },
     pincode :{
         type : Number,
@@ -23,7 +29,8 @@ const locationSchema = new mongoose.Schema({
         maxLength:[10,"Phone Number should be 10 Numbers"],
     },
     is_store : {
-        type : Boolean
+        type : Boolean,
+        default: true
     }
 });
 locationSchema.path('location_phone_number').validate(function validatePhone() {

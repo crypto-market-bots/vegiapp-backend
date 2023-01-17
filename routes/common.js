@@ -5,6 +5,8 @@ const { isAuthenticated ,authorizedRoles} = require("../middleware/auth");
 const {otpVerification} = require("../middleware/otpVerfications")
 const {sendOTP} = require('../Common/sendOtp');
 const { verifyExistence } = require("../Common/verifyExistence");
+const {allStore} = require("../Common/allStore");
+const { checkValidity } = require("../Common/check_token_validity");
 
 
 const router=express.Router();
@@ -12,4 +14,6 @@ const router=express.Router();
 
 router.route('/sendotp').post(sendOTP);
 router.route('/verifyExistence').post(verifyExistence)
+router.route('/getAllStore').get(allStore)
+router.route("/valid-token").get(isAuthenticated,checkValidity);
 module.exports = router;

@@ -1,5 +1,4 @@
 const app = require("./app.js");
-
 const dotenv = require("dotenv");
 const connectDatabase = require("./Config/database");
 
@@ -17,8 +16,8 @@ dotenv.config({ path: "./Config/config.env" });
 //connecting to database
 connectDatabase();
 
-const server = app.listen(process.env.PORT, () => {
-  console.log(`Server is port on the ${process.env.PORT}`);
+const server = app.listen(8080, () => {
+  console.log(`Server is port on the ${8080}`);
 });
 
 //Unhandling Rejection Promise Error
@@ -26,7 +25,7 @@ process.on("unhandledRejection", (err) => {
   console.log(`Errror: ${err.message}`);
   console.log(`Shutting down the server due to Unhandled rejection`);
 
-  server.close(() => {
-    process.exit(1);
-  });
+  // server.close(() => {
+  //   process.exit(1);
+  // });
 });

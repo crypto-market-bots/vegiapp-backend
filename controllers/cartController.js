@@ -1,9 +1,23 @@
 const Cart = require("../models/cartModel");
 const catchAsyncError = require("../middleware/catchAsyncError");
 const ErrorHander = require("../utils/errorhander");
+const Product = require('../models/productModel');
 const { getAllProductWithSellerId } = require("./productController");
 
 exports.addItemToCart = catchAsyncError(async (req, res, next) => {
+  if(!req.body.cartItems){
+    return next(new ErrorHander("all data is kept in cartItems",400));
+  }
+
+  if(!req.body.cartItems.productId || !req.body.cartItems.quantity || !req.body.cartItems.price){
+    return next(new ErrorHander("all fields are required",400));
+  }
+  const availableProduct = await Product.findById(req.body.cartItems.productId);
+  console.log(availableProduct)
+  if(!availableProduct){
+    return next(new ErrorHander("This product is not in our list",400))
+  }
+  console.log("he");
   Cart.findOne({ user: req.user.id }).exec(async (error, cart) => {
     if (error) return next(new ErrorHander(error, 400));
     if (cart) {
@@ -23,12 +37,13 @@ exports.addItemToCart = catchAsyncError(async (req, res, next) => {
           if(isItemAdded.quantity + req.body.cartItems.quantity < 1){
             return next(new ErrorHander("No more subraction is aplied on that poroduct", 400));
           }
-          condition = { user: req.user.id, "cartItems.product": productId };
+          condition = { user: req.user.id, "cartItems.productId": productId };
           action = {
             $set: {
               "cartItems.$": {
                 ...req.body.cartItems,
                 quantity: isItemAdded.quantity + req.body.cartItems.quantity,
+                price:req.body.cartItems.price,
                 last_update_At: Date.now(),
               },
             },
@@ -50,6 +65,7 @@ exports.addItemToCart = catchAsyncError(async (req, res, next) => {
           action = {
             $push: {
               cartItems: req.body.cartItems,
+
             },
           };
           Cart.findOneAndUpdate(condition, action).exec((error, _cart) => {
@@ -65,8 +81,13 @@ exports.addItemToCart = catchAsyncError(async (req, res, next) => {
     } else {
       //if cart not exists then create a new cart
       //"hello2");
+      
       req.body.user = req.user.id;
-      const cart = await Cart.create(req.body);
+      const cart = await Cart.create(req.body).then(()=>{
+        console.log("successfully")
+      }).catch((err)=>{
+        return next(new ErrorHander(err,400));
+      });
       res.status(200).json({
         success: true,
         cart,
@@ -111,11 +132,12 @@ exports.removeItemFromCart = catchAsyncError(async (req, res, next) => {
 
 
 exports.cartAllProduct = catchAsyncError(async (req, res, next) => {
-  const carts = await Cart.find({user:req.user.id}).populate({
-    path: "cartItems.productId",
-  });
+  const carts = await Cart.find({user:req.user.id}).populate([{
+    path: "cartItems.productId"
+    , strictPopulate: false 
+  }]);
   res.status(200).json({
     success: true,
-    carts,
+    carts:[...carts],
   });
 });

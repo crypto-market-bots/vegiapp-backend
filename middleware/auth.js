@@ -26,6 +26,7 @@ exports.verifyExistenceUser = catchAsyncError(async (req, res, next) => {
 
 exports.isAuthenticated = catchAsyncError(async (req, res, next) => {
   //"h");
+  console.log("isAuthenticated")
   const bearerHeader = req.headers["authorization"];
   //bearerHeader);
   if (typeof bearerHeader !== "undefined") {
@@ -44,6 +45,7 @@ exports.isAuthenticated = catchAsyncError(async (req, res, next) => {
         }
         //await Seller.findById(decodedData.userID));
         next();
+        // console.log(req.body.file);
       }
     });
 
