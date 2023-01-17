@@ -11,6 +11,6 @@ const router = express.Router();
 router.route("/delivery/allorder").get(isAuthenticated,authorizedRoles('delivery'),getOrdersForDelievery);
 router.route("/delivery/singleordr/:id").get(isAuthenticated,authorizedRoles('delivery'),signleOrderDelivery);
 router.route("/delivery/pickuporder/:id").get(isAuthenticated,authorizedRoles('delivery'),pickUpOrder)
-router.route("/delivery/deliveredorder/:id").get(otpVerification,deliveryOrder)
+router.route("/delivery/deliveredorder/:id").post(otpVerification,deliveryOrder)
 
 module.exports = router;
