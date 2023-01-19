@@ -28,7 +28,10 @@ const category = require('./routes/categoryRoute');
 const favourite =  require('./routes/favouriteRoute');
 const section = require("./routes/sectionRoute");
 const deliveryBoy  = require("./routes/delieveryBoyRoute");
+const bannerImage = require("./routes/bannerImage");
+
 const { urlencoded } = require("body-parser");
+
 // const product_route = require("./routes/productRoute")
 console.log(__dirname);
 // app.use( '/public/productImages',express.static(__dirname+'/public/productImages'));
@@ -44,6 +47,7 @@ app.use("/api/v4", category);
 app.use("/api/v4", favourite);
 app.use("/api/v4",section);
 app.use("/api/v4",deliveryBoy);
+app.use("/api/v4",bannerImage)
 //middleware for errors
 app.use(errorMiddleware);
 
