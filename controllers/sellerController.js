@@ -11,8 +11,8 @@ const User = require("../models/userModel");
 dotenv.config({ path: "../Config/config.env" });
 
 exports.registerSeller = catchAsyncError(async (req, res, next) => {
-  const { name, email, password, phone, pincode, store_city_title,address_line_1} = req.body;
-  if(!name || !email || !password || !phone || !pincode || !store_city_title || !address_line_1) return next(new ErrorHander("All fields is Required",400));
+  const { name, email, password, phone, pincode, store_city_title,address_line_1 ,city,state} = req.body;
+  if(!name || !email || !password || !phone || !pincode || !store_city_title || !address_line_1 || city || state) return next(new ErrorHander("All fields is Required",400));
   const user = await User.findOne({
     $or: [{ email: email }, { phone: phone }],
   });
@@ -38,7 +38,9 @@ exports.registerSeller = catchAsyncError(async (req, res, next) => {
         pincode : pincode,
         store_city_title : store_city_title,
         location_phone_number:phone,
-        address_line_1:address_line_1
+        address_line_1:address_line_1,
+        city:city,
+        state:state
       }).then(()=>{
         console.log("successfully")
       }).catch((err)=>{
