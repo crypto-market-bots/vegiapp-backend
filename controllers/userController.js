@@ -11,26 +11,27 @@ const Location = require("../models/locationModel");
 const accountSid = process.env.ACCOUNT_SID;
 const authToken = process.env.AUTH_TOKEN;
 const client = require("twilio")(accountSid, authToken);
+const Wallet = require("../models/walletModel");
 
 const crypto = require("crypto");
 const { runInNewContext } = require("vm");
 const Seller = require("../models/sellerModel");
 const userOtpVerification = require("../models/userOtpVerification");
+const { DESTRUCTION } = require("dns");
 const smsKey = process.env.SMS_SECRET_KEY;
 const twilioNum = process.env.TWILIO_PHONE_NUMBER;
 
 //register the user
 exports.registerUser = catchAsyncError(async (req, res, next) => {
-  const { name, email, password, phone, pincode, image, public_image_id } =
+  const { name, email, password, phone, pincode, image, public_image_id,refer_id } =
     req.body;
   if (
     !name ||
     !email ||
     !password ||
     !phone ||
-    !pincode ||
-    !image ||
-    !public_image_id
+    !pincode 
+    
   )
     return next(new ErrorHander("all fields are required"));
   const user = await User.findOne({
@@ -67,7 +68,23 @@ exports.registerUser = catchAsyncError(async (req, res, next) => {
 
       const salt = await bcrypt.genSalt(10);
       const hashPassword = await bcrypt.hash(password, salt);
-
+      let isrefer = 0;
+      if(refer_id){
+        const wallet = await Wallet.findOne({refer_id:refer_id});
+        if(!wallet) return next(new ErrorHander("This refer_id does'nt exist",400));
+        if(wallet.count<1){
+          return next(new ErrorHander("No more user is allowed to use this refer id"))
+        }   
+         //check the user is exists or not 
+         const refereal_user = await User.findById(wallet.user);
+         if(!refereal_user) return next (new ErrorHander("this user of this refer id does'nt exists. please change this refer id"));
+         
+         await Wallet.findByIdAndUpdate(wallet.id,{
+          count:wallet.count-1,
+          amount :wallet.amount + process.env.refered_coins
+         });
+         isrefer = 1;
+      }
       const doc = await User.create({
         name: name,
         email: email,
@@ -77,8 +94,24 @@ exports.registerUser = catchAsyncError(async (req, res, next) => {
         image: image,
         public_image_id: public_image_id,
       });
-
+      
       const saved_user = await User.findOne({ email: email });
+
+      //generate the unique refer id
+      let loginUserReferid =  crypto.randomBytes(4).toString("hex");
+
+      //check the wallet is exists with this refer_id or not
+     while( await Wallet.findOne({refer_id:loginUserReferid})){
+      loginUserReferid =  crypto.randomBytes(4).toString("hex");
+     }
+
+      //Generate the wallet of new user
+       const loginUserWallet = await Wallet.create({
+            refer_id:loginUserReferid,
+            user:saved_user._id,
+            amount:isrefer==1?process.env.refered_coins:0,
+            createdAt:Date.now()
+       })
 
       // Generate JWT Token
       const token = jwt.sign(
@@ -324,11 +357,15 @@ exports.getUserDetails = catchAsyncError(async (req, res, next) => {
     const user = await User.findById(req.user.id).populate({
       path: "current_store_location",
     });
+    
+    
     res.status(200).json({
       success: true,
       user,
     });
   } else {
+    
+
     const seller = await Seller.findById(req.seller.id).populate({
       path: "store_location",
     });
@@ -600,3 +637,16 @@ exports.getAllDeliveryLocation = catchAsyncError(async (req, res, next) => {
     user,
   });
 });
+
+
+
+
+//get wallet from user id
+exports.getWallet = catchAsyncError(async(req,res,next)=>{
+  const wallet = await Wallet.findOne({user:req.user.id});
+  if(!wallet) return next(new ErrorHander("Wallet of this user is not exist",400));
+  res.status(200).json({
+    success:true,
+    wallet:wallet
+  })
+ })
