@@ -1,7 +1,7 @@
 const express=require("express");
 const { checkValidity } = require("../Common/check_token_validity");
 //const { getSingleProduct } = require("../controllers/productController");
-const { registerUser, loginUserPhone, logout, sendUserPasswordResetEmail, UserPasswordReset, getUserDetails, changeUserPassword  , updateUserProfile, getAllUser, getSingleUser, loginUserEmail, addDeliveryAddress, getAllLocation, getAllDeliveryLocation, deleteDeliveryAddress, changeDeliveryAddress, VerifyOtp, resetPassword, changeUserLocation} =  require("../controllers/userController");
+const { registerUser, loginUserPhone, logout, sendUserPasswordResetEmail, UserPasswordReset, getUserDetails, changeUserPassword  , updateUserProfile, getAllUser, getSingleUser, loginUserEmail, addDeliveryAddress, getAllLocation, getAllDeliveryLocation, deleteDeliveryAddress, changeDeliveryAddress, VerifyOtp, resetPassword, changeUserLocation, getWallet} =  require("../controllers/userController");
 const { isAuthenticated ,authorizedRoles,verifyExistenceUser} = require("../middleware/auth");
 const {otpVerification} = require("../middleware/otpVerfications")
 
@@ -21,7 +21,8 @@ router.route("/user/deleteDeliveryAddress/:id").get(isAuthenticated,authorizedRo
 router.route("/user/editDeliveryAddress/:id").post(isAuthenticated,authorizedRoles("user"),changeDeliveryAddress);
 router.route("/user/resetpassword").post(resetPassword);
 router.route("/user/changeuserlocation").post(isAuthenticated,changeUserLocation);
-router.route("/user/updateuser").post(isAuthenticated,updateUserProfile)
+router.route("/user/updateuser").post(isAuthenticated,updateUserProfile);
+router.route("/user/wallet").get(isAuthenticated,authorizedRoles("user"),getWallet);
 //router.route("/user/Update User profile").put(isAuthenticated,updateUserProfile);
 
 // router.route("/admin/users").get(isAuthenticated,authorizedRoles('admin'),getAllUser);
