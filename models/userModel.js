@@ -36,11 +36,11 @@ const userSchema = new mongoose.Schema({
     },
     image: {
         type:String,
-        required: [true,"enter the image"]
+        
       },
       public_image_id: {
         type:String,
-        required : [true,"enter the public the image id"]
+       
       },
     current_store_location :{
         type: mongoose.Schema.ObjectId,
