@@ -205,7 +205,7 @@ exports.sendUserPasswordResetEmail = catchAsyncError(async (req, res, next) => {
     if (user) {
       //send mail
       try {
-        const otp = `${Math.floor(1000 + Math.random() * 9000)}`;
+        const otp = `${Math.floor(100000 + Math.random() * 9000)}`;
         const saltRounds = 10;
         const hashOtp = await bcrypt.hash(otp, saltRounds);
         await userOtpVerification.deleteMany({ userID: user._id });
@@ -343,7 +343,7 @@ exports.resetPassword = catchAsyncError(async (req, res, next) => {
       }
     } else {
       return next(
-        new ErrorHander("Passowrd and Confirm Password is mathch", 400)
+        new ErrorHander("Passowrd and Confirm Password is must be same", 400)
       );
     }
   } else {
@@ -399,7 +399,7 @@ exports.changeUserLocation = catchAsyncError(async (req, res, next) => {
       )
     );
   await User.findByIdAndUpdate(user._id, {
-    $set: { store_location: store_location },
+    $set: { current_store_location: store_location },
   });
   res.status(200).json({
     success: true,

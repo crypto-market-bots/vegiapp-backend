@@ -37,7 +37,7 @@ exports.pickUpOrder = catchAsyncError(async (req, res, next) => {
     if (order.deliveryBoy){
         return next(new ErrorHander("order is already picked up by some other delivery boy"));
     }
-    order.orderStatus = 'out-for-delivery'
+    order.orderStatus = 'out-of-delivery'
     order.deliveryBoy = req.user
     order.save()
 
@@ -71,7 +71,7 @@ exports.deliveryOrder = catchAsyncError(async(req,res,next)=>{
 
 
 exports.pickOrders = catchAsyncError(async(req,res,next)=>{
-   const PickedOrders = await Order.find({deliveryBoy : req.user._id , orderStatus: "out-for-delivery", trans_status:"paid"}).populate("orderItems.product shippingInfo_id");
+   const PickedOrders = await Order.find({deliveryBoy : req.user._id , orderStatus: "out-of-delivery", trans_status:"paid"}).populate("orderItems.product shippingInfo_id");
     res.status(200).json({
         success:true,
         PickedOrders
