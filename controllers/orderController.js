@@ -15,7 +15,8 @@ let razorPayInstance = new Razorpay({
 });
 
 exports.newOrder = catchAsyncError(async (req, res, next) => {
-  const { shippingInfo_id, orderItems } = req.body;
+  const { shippingInfo_id, orderItems, vegiCoin } = req.body;
+  let wallet = await Wallet.findOne({user:req.user._id})
 
   if (!shippingInfo_id || !orderItems) {
     return next(new ErrorHander("All Fields Required", 400));
@@ -47,9 +48,20 @@ exports.newOrder = catchAsyncError(async (req, res, next) => {
     await product.save({ validateBeforeSave: false });
     itemsPrice += orderItem.price;
   }
-  // taxPrice //shippingPrice
 
-  const totalPrice = itemsPrice;
+  // taxPrice //shippingPrice
+  if (wallet.amount > vegiCoin){
+    return next(
+      new ErrorHander(
+        `Insufficient coins !`
+      )
+    );
+  }
+
+  wallet.amount = wallet.amount-vegiCoin;
+  wallet.save()
+  
+  const totalPrice = itemsPrice-vegiCoin;
    const uid = uuidv4();
    console.log("uid->>",uid);
   orderRazorpayParams = {
