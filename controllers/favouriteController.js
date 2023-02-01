@@ -18,8 +18,8 @@ exports.addItemToFavourite = catchAsyncError(async (req, res, next) => {
             new ErrorHander("Product doesn't exist in our stock", 400)
           );
             // console.log(req.body.productId);
-         const alreadyAdded = await Favourite.find({"productsId":req.body.productId});
-        //  console.log(alreadyAdded);
+         const alreadyAdded = await Favourite.find({"productsId":req.body.productId,user:req.user.id});
+         console.log(alreadyAdded);
          if(alreadyAdded.length > 0) {
           // console.log("yes");
           return res
