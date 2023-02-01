@@ -50,7 +50,7 @@ exports.newOrder = catchAsyncError(async (req, res, next) => {
   }
 
   // taxPrice //shippingPrice
-  if (wallet.amount > vegiCoin){
+  if (wallet.amount < vegiCoin){
     return next(
       new ErrorHander(
         `Insufficient coins !`
@@ -60,7 +60,7 @@ exports.newOrder = catchAsyncError(async (req, res, next) => {
 
   wallet.amount = wallet.amount-vegiCoin;
   wallet.save()
-  
+
   const totalPrice = itemsPrice-vegiCoin;
    const uid = uuidv4();
    console.log("uid->>",uid);
