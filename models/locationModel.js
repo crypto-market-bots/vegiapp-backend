@@ -30,7 +30,7 @@ const locationSchema = new mongoose.Schema({
     trim: true,
   },
   location_phone_number: {
-    type: Number,
+    type: String,
     minLength: [10, "Phone Number should be 10 Numbers"],
     maxLength: [10, "Phone Number should be 10 Numbers"],
   },
@@ -39,10 +39,5 @@ const locationSchema = new mongoose.Schema({
     default: true,
   },
 });
-locationSchema.path("location_phone_number").validate(function validatePhone() {
-  return (
-    this.location_phone_number > 999999999 &&
-    this.location_phone_number <= 9999999999
-  );
-});
+
 module.exports = mongoose.model("Location", locationSchema);
