@@ -21,7 +21,7 @@ exports.newOrder = catchAsyncError(async (req, res, next) => {
     return next(new ErrorHander("All Fields Required", 400));
   }
 
-  const loc = await Location.findById(shippingInfo_id);
+  const loc = await Location.findById(shippingInfo_id._id);
 
   if (!loc) return next(new ErrorHander("Location does not exist"));
   var itemsPrice = 0;
@@ -122,7 +122,7 @@ exports.verifyOrder = catchAsyncError(async (req, res, next) => {
 //GET SINGLE order
 exports.getSingleOrder = catchAsyncError(async (req, res, next) => {
   const order = await Order.findById(req.params.id)
-    .populate("orderItems.product shippingInfo_id")
+    .populate("orderItems.product")
     .select("-orderItems.product.stock_alert");
   if (!order) {
     return next(new ErrorHander("Order is not find by this id", 404));
@@ -143,7 +143,7 @@ exports.getSingleOrder = catchAsyncError(async (req, res, next) => {
 
 //Get all the users for looged users
 exports.myOrders = catchAsyncError(async (req, res, next) => {
-  const orders = await Order.find({ customer: req.user._id }).populate("orderItems.product shippingInfo_id");
+  const orders = await Order.find({ customer: req.user._id }).populate("orderItems.product");
 
   res.status(200).json({
     success: true,
