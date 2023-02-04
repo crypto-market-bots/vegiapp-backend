@@ -15,14 +15,14 @@ router.route("/user/send-reset-password-email").post(sendUserPasswordResetEmail)
 router.route("/user/verify-otp").post(VerifyOtp)
 router.route("/user/me").get(isAuthenticated,getUserDetails);
 router.route("/user/changedPassword").put( isAuthenticated, changeUserPassword);
-router.route("/user/addDeliveryAddress").post( isAuthenticated, authorizedRoles('user'), addDeliveryAddress);
-router.route("/user/getAllDeliveryLocation").get(isAuthenticated, authorizedRoles('user'),getAllDeliveryLocation);
-router.route("/user/deleteDeliveryAddress/:id").get(isAuthenticated,authorizedRoles("user"),deleteDeliveryAddress);
-router.route("/user/editDeliveryAddress/:id").post(isAuthenticated,authorizedRoles("user"),changeDeliveryAddress);
+router.route("/user/addDeliveryAddress").post( isAuthenticated, authorizedRoles('user',"delivery"), addDeliveryAddress);
+router.route("/user/getAllDeliveryLocation").get(isAuthenticated, authorizedRoles('user',"delivery"),getAllDeliveryLocation);
+router.route("/user/deleteDeliveryAddress/:id").get(isAuthenticated,authorizedRoles("user","delivery"),deleteDeliveryAddress);
+router.route("/user/editDeliveryAddress/:id").post(isAuthenticated,authorizedRoles("user","delivery"),changeDeliveryAddress);
 router.route("/user/resetpassword").post(resetPassword);
 router.route("/user/changeuserlocation").post(isAuthenticated,changeUserLocation);
 router.route("/user/updateuser").post(isAuthenticated,updateUserProfile);
-router.route("/user/wallet").get(isAuthenticated,authorizedRoles("user"),getWallet);
+router.route("/user/wallet").get(isAuthenticated,authorizedRoles("user","delivery"),getWallet);
 //router.route("/user/Update User profile").put(isAuthenticated,updateUserProfile);
 
 // router.route("/admin/users").get(isAuthenticated,authorizedRoles('admin'),getAllUser);

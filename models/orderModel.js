@@ -1,114 +1,134 @@
-const mongoose=require('mongoose');
+const mongoose = require("mongoose");
 
 const orderSchema = new mongoose.Schema({
-
-    shippingInfo_id: {
-        type: mongoose.Schema.ObjectId,
-           ref: "Location",
-           required: true,
+  shippingInfo_id: {
+    full_name: {
+      type: String,
+      trim: true,
     },
-    orderItems: [
-        {
-            price: {
-                type:Number,
-                required:true,
-            },
-            quantity: {
-                type:Number,
-                required:true,
-            },
-         
-            product: {
-                type: mongoose.Schema.ObjectId,
-                ref: "Product",
-                required: true,
-            },
-        },
-    ],
-    customer: {
-        type: mongoose.Schema.ObjectId,
-        ref: "User",
+    city: {
+      type: String,
+      trim: true,
+    },
+    state: {
+      type: String,
+      trim: true,
+    },
+    pincode: {
+      type: Number,
+      required: [true, "required pincode"],
+    },
+    address_line_1: {
+      type: String,
+      trim: true,
+    },
+    address_line_2: {
+      type: String,
+      trim: true,
+    },
+    location_phone_number: {
+      type: String,
+      minLength: [10, "Phone Number should be 10 Numbers"],
+      maxLength: [10, "Phone Number should be 10 Numbers"],
+    },
+  },
+  orderItems: [
+    {
+      price: {
+        type: Number,
         required: true,
-    },
-    
-    itemsPrice: {
+      },
+      quantity: {
         type: Number,
-        default: 0,
-        required:true
-    },
-    taxPrice: {
-        type: Number,
-        default: 0,
-        required:true
-    },
-    shippingPrice: {
-        type: Number,
-        default: 0,
-        required:true
-    },
-    totalPrice: {
-        type: Number,
-        default: 0,
-        required:true
-    },
-    
-    orderStatus: {
-        type: String,
         required: true,
-        default: "initiated",
-    },
-    deliveredDate: {
-        type: String,
-        
-    },
+      },
 
-    deliveredTime:{
-         type:String
-    },
-
-    createdDate: {
-        type: String,
-       
-    },
-       
-    createdTime:{
-        type:String
-    },
-    deliveryBoy: {
+      product: {
         type: mongoose.Schema.ObjectId,
-        ref: "User",
+        ref: "Product",
+        required: true,
+      },
     },
-    
-    store_location :{
-        type: mongoose.Schema.ObjectId,
-        ref: "Location",
-    },
-    
-    trans_status :{
-        type: String,
-    },
+  ],
+  customer: {
+    type: mongoose.Schema.ObjectId,
+    ref: "User",
+    required: true,
+  },
 
-    order_id :{
-        type: String,
-        required:true,
-    },
+  itemsPrice: {
+    type: Number,
+    default: 0,
+    required: true,
+  },
+  taxPrice: {
+    type: Number,
+    default: 0,
+    required: true,
+  },
+  shippingPrice: {
+    type: Number,
+    default: 0,
+    required: true,
+  },
+  totalPrice: {
+    type: Number,
+    default: 0,
+    required: true,
+  },
 
-    razorpay_receipt_id  :{
-        type: String,
-      
-    },
+  orderStatus: {
+    type: String,
+    required: true,
+    default: "initiated",
+  },
+  deliveredDate: {
+    type: String,
+  },
 
-    payment_id : {
-        type: String,
-    },
-    
-    signature :{
-        type:String,
-    }
+  deliveredTime: {
+    type: String,
+  },
+
+  createdDate: {
+    type: String,
+  },
+
+  createdTime: {
+    type: String,
+  },
+  deliveryBoy: {
+    type: mongoose.Schema.ObjectId,
+    ref: "User",
+  },
+
+  store_location: {
+    type: mongoose.Schema.ObjectId,
+    ref: "Location",
+  },
+
+  trans_status: {
+    type: String,
+  },
+
+  order_id: {
+    type: String,
+    required: true,
+  },
+
+  razorpay_receipt_id: {
+    type: String,
+  },
+
+  payment_id: {
+    type: String,
+  },
+
+  signature: {
+    type: String,
+  },
   //delivery boy section
   //upi section
-
 });
 
-module.exports = mongoose.model("Order",orderSchema);
- 
+module.exports = mongoose.model("Order", orderSchema);
