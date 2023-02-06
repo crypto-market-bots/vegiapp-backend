@@ -81,7 +81,7 @@ exports.registerUser = catchAsyncError(async (req, res, next) => {
          
          await Wallet.findByIdAndUpdate(wallet.id,{
           count:wallet.count-1,
-          amount :wallet.amount + process.env.refered_coins
+          amount :String(Number(wallet.amount) + Number(process.env.refered_coins))
          });
          isrefer = 1;
       }

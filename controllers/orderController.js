@@ -47,6 +47,10 @@ exports.newOrder = catchAsyncError(async (req, res, next) => {
     await product.save({ validateBeforeSave: false });
     itemsPrice += orderItem.price;
   }
+
+ 
+
+
   // taxPrice //shippingPrice
 
   const totalPrice = itemsPrice;
@@ -102,6 +106,11 @@ exports.verifyOrder = catchAsyncError(async (req, res, next) => {
     .digest("hex");
 
   if (expectedSignature === req.body.razorpay_signature) {
+
+    // now here update the coins  // coins 
+    // minus
+
+
     await Order.findOneAndUpdate(
       { order_id: req.body.razorpay_order_id },
       {
@@ -110,6 +119,11 @@ exports.verifyOrder = catchAsyncError(async (req, res, next) => {
         trans_status: "paid",
       }
     );
+
+
+
+
+
     res.status(200).json({
       success: true,
       message: "order placed successfully",
