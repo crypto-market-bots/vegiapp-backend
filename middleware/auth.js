@@ -88,6 +88,8 @@ exports.authorizedRoles = (...roles) => {
       //console.log("hello seller user");
 
       //"user");
+      console.log(roles);
+      console.log(req.user.role)
       if (!roles.includes(req.user.role)) {
       return next(
         new ErrorHander(
