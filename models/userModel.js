@@ -34,10 +34,18 @@ const userSchema = new mongoose.Schema({
         type:String,
         default: "user",
     },
+    image: {
+        type:String,
+        
+      },
+      public_image_id: {
+        type:String,
+       
+      },
     current_store_location :{
         type: mongoose.Schema.ObjectId,
         ref: "Location",
-        required: false,
+       
     },
     
     delivery_address : [{

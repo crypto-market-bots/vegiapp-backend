@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const categoriesSchema = new mongoose.Schema({
+const sectionSchema = new mongoose.Schema({
     seller_id:{
         type: mongoose.Schema.ObjectId,
         ref: "Seller",
@@ -28,4 +28,4 @@ const categoriesSchema = new mongoose.Schema({
   ],
 });
 
-module.exports = mongoose.model("Category", categoriesSchema);
+module.exports = mongoose.model("Section", sectionSchema);

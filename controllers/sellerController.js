@@ -11,7 +11,8 @@ const User = require("../models/userModel");
 dotenv.config({ path: "../Config/config.env" });
 
 exports.registerSeller = catchAsyncError(async (req, res, next) => {
-  const { name, email, password, phone, pincode, store_city_title} = req.body;
+  const { name, email, password, phone, pincode, store_city_title,address_line_1 ,city,state} = req.body;
+  if(!name || !email || !password || !phone || !pincode || !store_city_title || !address_line_1 || city || state) return next(new ErrorHander("All fields is Required",400));
   const user = await User.findOne({
     $or: [{ email: email }, { phone: phone }],
   });
@@ -28,14 +29,23 @@ exports.registerSeller = catchAsyncError(async (req, res, next) => {
 
     const location = await Location.findOne({pincode:pincode})
  
-    if (!location ){
+    if (location ){
+      return next(new ErrorHander("Your store is alreadu exists"))
+    }
      
     await Location.create({
         is_store : true,
         pincode : pincode,
-        store_city_title : store_city_title
-      });
-    }
+        store_city_title : store_city_title,
+        location_phone_number:phone,
+        address_line_1:address_line_1,
+        city:city,
+        state:state
+      }).then(()=>{
+        console.log("successfully")
+      }).catch((err)=>{
+        return next(new ErrorHander(err,400));
+      });;
    const loc = await Location.findOne({pincode:pincode})
     if (name && email && password && phone) {
       //password=password.trim();
@@ -60,6 +70,10 @@ exports.registerSeller = catchAsyncError(async (req, res, next) => {
         password: hashPassword,
         phone: phone,
         store_location:loc._id,
+      }).then(()=>{
+        console.log("successfully")
+      }).catch((err)=>{
+        return next(new ErrorHander(err,400));
       });
 
       const saved_seller = await Seller.findOne({ email: email });

@@ -1,112 +1,134 @@
-const mongoose=require('mongoose');
+const mongoose = require("mongoose");
 
 const orderSchema = new mongoose.Schema({
-
-    shippingInfo: {
-        address: {
-            type: String,
-            required: true,
-        },
-        city: {
-            type:String,
-            required:true,
-        },
-        state: {
-            type:String,
-            required:true,
-        },
-        country: {
-            type:String,
-            required:true,
-        },
-        pinCode: {
-            type:String,
-            required:true,
-        },
-        phoneNo: {
-            type:Number,
-            required:true,
-        },
+  shippingInfo_id: {
+    full_name: {
+      type: String,
+      trim: true,
     },
-    orderItems: [
-        {
-            name: {
-                type:String,
-                required:true,
-            },
-            price: {
-                type:Number,
-                required:true,
-            },
-            quantity: {
-                type:Number,
-                required:true,
-            },
-            image: {
-                type:String,
-                required:true,
-            },
-            product: {
-                type: mongoose.Schema.ObjectId,
-                ref: "Product",
-                required: true,
-            },
-        },
-    ],
-    user: {
+    city: {
+      type: String,
+      trim: true,
+    },
+    state: {
+      type: String,
+      trim: true,
+    },
+    pincode: {
+      type: Number,
+      required: [true, "required pincode"],
+    },
+    address_line_1: {
+      type: String,
+      trim: true,
+    },
+    address_line_2: {
+      type: String,
+      trim: true,
+    },
+    location_phone_number: {
+      type: String,
+      minLength: [10, "Phone Number should be 10 Numbers"],
+      maxLength: [10, "Phone Number should be 10 Numbers"],
+    },
+  },
+  orderItems: [
+    {
+      price: {
+        type: Number,
+        required: true,
+      },
+      quantity: {
+        type: Number,
+        required: true,
+      },
+
+      product: {
         type: mongoose.Schema.ObjectId,
-        ref: "User",
+        ref: "Product",
         required: true,
+      },
     },
-    paymentInfo: {
-        id: {
-            type:String,
-            required:true,
-        },
-        status: {
-            type:String,
-            required:true,
-        },
-    },
-    paidAt: {
-        type: Date,
-        required: true,
-    },
+  ],
+  customer: {
+    type: mongoose.Schema.ObjectId,
+    ref: "User",
+    required: true,
+  },
 
-    itemsPrice: {
-        type: Number,
-        default: 0,
-        required:true
-    },
-    taxPrice: {
-        type: Number,
-        default: 0,
-        required:true
-    },
-    shippingPrice: {
-        type: Number,
-        default: 0,
-        required:true
-    },
-    totalPrice: {
-        type: Number,
-        default: 0,
-        required:true
-    },
-    
-    orderStatus: {
-        type: String,
-        required: true,
-        default: "Processing",
-    },
-    deliveredAt: Date,
+  itemsPrice: {
+    type: Number,
+    default: 0,
+    required: true,
+  },
+  taxPrice: {
+    type: Number,
+    default: 0,
+    required: true,
+  },
+  shippingPrice: {
+    type: Number,
+    default: 0,
+    required: true,
+  },
+  totalPrice: {
+    type: Number,
+    default: 0,
+    required: true,
+  },
 
-    createdAt: {
-        type: String,
-        default: Date.now,
-    },
- 
+  orderStatus: {
+    type: String,
+    required: true,
+    default: "initiated",
+  },
+  deliveredDate: {
+    type: String,
+  },
+
+  deliveredTime: {
+    type: String,
+  },
+
+  createdDate: {
+    type: String,
+  },
+
+  createdTime: {
+    type: String,
+  },
+  deliveryBoy: {
+    type: mongoose.Schema.ObjectId,
+    ref: "User",
+  },
+
+  store_location: {
+    type: mongoose.Schema.ObjectId,
+    ref: "Location",
+  },
+
+  trans_status: {
+    type: String,
+  },
+
+  order_id: {
+    type: String,
+    required: true,
+  },
+
+  razorpay_receipt_id: {
+    type: String,
+  },
+
+  payment_id: {
+    type: String,
+  },
+
+  signature: {
+    type: String,
+  },
+  //delivery boy section
+  //upi section
 });
 
-module.exports = mongoose.model("Order",orderSchema);
- 
+module.exports = mongoose.model("Order", orderSchema);
