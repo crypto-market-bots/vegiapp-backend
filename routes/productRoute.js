@@ -31,7 +31,6 @@ router
   .post(
     isAuthenticated,
     authorizedRoles("seller"),
-    upload.single("image"),
     createProduct
   );
 
@@ -40,7 +39,7 @@ router
   .put(
     isAuthenticated,
     authorizedRoles("seller"),
-    upload.single("image"),
+    
     updateProduct
   )
   .delete(isAuthenticated, authorizedRoles("seller"), deleteProducts);
@@ -54,5 +53,5 @@ router
   .get(getAllReviews)
   .delete(isAuthenticated, deleteReview);
 
-// module.exports = product_route;
+// modue.exports = product_route;
 module.exports = router;

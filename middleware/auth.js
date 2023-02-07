@@ -26,6 +26,7 @@ exports.verifyExistenceUser = catchAsyncError(async (req, res, next) => {
 
 exports.isAuthenticated = catchAsyncError(async (req, res, next) => {
   //"h");
+  console.log("isAuthenticated")
   const bearerHeader = req.headers["authorization"];
   //bearerHeader);
   if (typeof bearerHeader !== "undefined") {
@@ -44,6 +45,7 @@ exports.isAuthenticated = catchAsyncError(async (req, res, next) => {
         }
         //await Seller.findById(decodedData.userID));
         next();
+        // console.log(req.body.file);
       }
     });
 
@@ -86,6 +88,8 @@ exports.authorizedRoles = (...roles) => {
       //console.log("hello seller user");
 
       //"user");
+      console.log(roles);
+      console.log(req.user.role)
       if (!roles.includes(req.user.role)) {
       return next(
         new ErrorHander(
