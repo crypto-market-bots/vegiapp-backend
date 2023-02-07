@@ -38,6 +38,10 @@ const orderSchema = new mongoose.Schema({
         type: Number,
         required: true,
       },
+      discount:{
+        type: Number,
+        required: true,
+      },
       quantity: {
         type: Number,
         required: true,
@@ -55,10 +59,12 @@ const orderSchema = new mongoose.Schema({
     ref: "User",
     required: true,
   },
+  coin:{
+    type:Number,
 
+  },
   itemsPrice: {
     type: Number,
-    default: 0,
     required: true,
   },
   taxPrice: {
@@ -73,7 +79,7 @@ const orderSchema = new mongoose.Schema({
   },
   totalPrice: {
     type: Number,
-    default: 0,
+   
     required: true,
   },
 
@@ -85,23 +91,13 @@ const orderSchema = new mongoose.Schema({
   deliveredDate: {
     type: String,
   },
-
-  deliveredTime: {
-    type: String,
-  },
-
-  createdDate: {
-    type: String,
-  },
-
-  createdTime: {
+ createdDate: {
     type: String,
   },
   deliveryBoy: {
     type: mongoose.Schema.ObjectId,
     ref: "User",
   },
-
   store_location: {
     type: mongoose.Schema.ObjectId,
     ref: "Location",
@@ -113,7 +109,7 @@ const orderSchema = new mongoose.Schema({
 
   order_id: {
     type: String,
-    required: true,
+    
   },
 
   razorpay_receipt_id: {
@@ -127,8 +123,12 @@ const orderSchema = new mongoose.Schema({
   signature: {
     type: String,
   },
-  //delivery boy section
-  //upi section
+  rating:{
+    type:Number
+  },
+  comment:{
+    type:String
+  }
 });
 
 module.exports = mongoose.model("Order", orderSchema);
