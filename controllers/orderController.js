@@ -45,7 +45,7 @@ exports.newOrder = catchAsyncError(async (req, res, next) => {
     store_location = seller.store_location;
     orderItem.price = product.real_price*orderItem.quantity;
     orderItem.discount = 
-      Math.ceil((product.real_price - (product.real_price * product.discount) / 100) *
+      Math.ceil(( (product.real_price * product.discount) / 100) *
       orderItem.quantity);
     product.stock -= orderItem.quantity;
 
@@ -69,6 +69,7 @@ exports.newOrder = catchAsyncError(async (req, res, next) => {
   let totalPrice = itemsPrice-discount-(coin?coin:0); //shipping and tax price functionality pending
   console.log(typeof(totalPrice),totalPrice)
   console.log(Date(Date.now()));
+  
   
   if (coin == itemsPrice-discount) {
     const order = await Order.create({
@@ -141,6 +142,8 @@ exports.newOrder = catchAsyncError(async (req, res, next) => {
 });
 
 exports.verifyOrder = catchAsyncError(async (req, res, next) => {
+  const {coin} = req.body;
+  if(!coin) return next(new ErrorHander("Please enter the coin"))
   body = req.body.razorpay_order_id + "|" + req.body.razorpay_payment_id;
   let wallet = await Wallet.findOne({user:req.user._id})
 
@@ -153,8 +156,8 @@ exports.verifyOrder = catchAsyncError(async (req, res, next) => {
   if (expectedSignature === req.body.razorpay_signature) {
     // now here update the coins  // coins
     // minus
-    wallet.amount = wallet.amount-req.body.coin;
-    wallet.save()
+    wallet.amount = wallet.amount-coin;
+   await wallet.save()
     await Order.findOneAndUpdate(
       { order_id: req.body.razorpay_order_id },
       {
