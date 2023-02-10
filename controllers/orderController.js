@@ -143,7 +143,7 @@ exports.newOrder = catchAsyncError(async (req, res, next) => {
 
 exports.verifyOrder = catchAsyncError(async (req, res, next) => {
   const {coin} = req.body;
-  if(!coin) return next(new ErrorHander("Please enter the coin"))
+ 
   body = req.body.razorpay_order_id + "|" + req.body.razorpay_payment_id;
   let wallet = await Wallet.findOne({user:req.user._id})
 
