@@ -38,11 +38,13 @@ exports.sendOTP = catchAsyncError(async (req, res, next) => {
         to: phone,
       })
       .then((messages) => {
-        res.status(200).send({ phone, hash: fullHash });
+        
+	res.status(200).send({ phone, hash: fullHash });
        
       })
       .catch((err) => {
-        return next(new ErrorHander(err, 400));
+        console.log("sendotp error : ", err);
+      	res.status(400).send({message:"failed" });
       });
   
     // res.status(200).send({ phone, hash: fullHash, otp }); 

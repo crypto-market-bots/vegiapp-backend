@@ -51,4 +51,8 @@ app.use("/api/v4",bannerImage)
 //middleware for errors
 app.use(errorMiddleware);
 
+app.get("/api/health", (req, res, next) => {
+  res.send("OK");
+});
+
 module.exports = app;
