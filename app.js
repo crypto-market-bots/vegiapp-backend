@@ -6,6 +6,7 @@ const dotenv = require("dotenv");
 dotenv.config({ path: "./Config/config.env" });
 var bodyParser =  require('body-parser');
 // app.use(bodyParser.json());
+const ws = require('./Common/websocket')
 const fileUpload = require('express-fileupload')
 app.use(bodyParser.urlencoded({extended:true}));
 // app.use(express.urlencoded({extended:true}));

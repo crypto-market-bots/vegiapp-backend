@@ -7,12 +7,15 @@ const jwt = require("jsonwebtoken");
 const Location = require("../models/locationModel");
 const { transporter, use } = require("../Config/email");
 const sendEmail = require("../utils/sendEmail");
+const {broadcastMessage} = require('../Common/websocket');
 const User = require("../models/userModel");
 dotenv.config({ path: "../Config/config.env" });
 
 exports.registerSeller = catchAsyncError(async (req, res, next) => {
-  const { name, email, password, phone, pincode, store_city_title,address_line_1 ,city,state} = req.body;
-  if(!name || !email || !password || !phone || !pincode || !store_city_title || !address_line_1 || city || state) return next(new ErrorHander("All fields is Required",400));
+  console.log(req.body);
+  const { name, email, password, phone, pincode,address ,city,state,storeName} = req.body;
+  if(!name || !email || !password || !phone || !pincode  || !address || !city || !state) return next(new ErrorHander("All fields is Required",400));
+  const store_city_title = storeName;
   const user = await User.findOne({
     $or: [{ email: email }, { phone: phone }],
   });
@@ -38,7 +41,7 @@ exports.registerSeller = catchAsyncError(async (req, res, next) => {
         pincode : pincode,
         store_city_title : store_city_title,
         location_phone_number:phone,
-        address_line_1:address_line_1,
+        address_line_1:address,
         city:city,
         state:state
       }).then(()=>{
@@ -84,7 +87,8 @@ exports.registerSeller = catchAsyncError(async (req, res, next) => {
         process.env.JWT_SECRET_KEY,
         { expiresIn: "5d" }
       );
-
+      const msg = 'refresh-users';
+      broadcastMessage(msg)
       res.status(201).json({
         success: true,
         message: "Registeration Successful",
@@ -130,5 +134,12 @@ exports.loginSellerEmail = catchAsyncError(async (req, res, next) => {
   }
 });
 
+exports.getAllSellers = catchAsyncError(async (req, res, next) => {
+  const sellers = await Seller.find().populate( {path:'store_location'});
 
+  res.status(200).json({
+    success: true,
+    sellers,
+  });
+});
 

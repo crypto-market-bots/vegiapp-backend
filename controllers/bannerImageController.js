@@ -32,6 +32,8 @@ exports.addBannerImage = catchAsyncError(async(req,res,next)=>{
         return next(new ErrorHander("File format is incorrect.", 400));
       }
       const seller = await Seller.findById(req.seller.id);
+      console.log(seller);
+      console.log('seller b')
      if(!seller) return next( new ErrorHander("Seller does not exits",400));
 
       cloudinary.v2.uploader.upload(
@@ -108,6 +110,7 @@ exports.getAllBannerImage = catchAsyncError(async(req,res,next)=>{
     
     console.log("req user",req.user);
     const image = await bannerImage.find({store_location:req.user.current_store_location});
+    console.log(image);
     res.status(200).json({
       success:true,
       image : image

@@ -18,8 +18,8 @@ cloudinary.config({
 });
 //Create Product-- only use by Admin
 exports.createProduct = catchAsyncError(async (req, res, next) => {
-  console.log(req.body);
-  req.body.seller = req.seller.id;
+  console.log(req);
+  req.body.seller = req.seller.id ? req.seller.id : req.seller._id;
  
   let public;
   let imageone;
@@ -36,11 +36,11 @@ exports.createProduct = catchAsyncError(async (req, res, next) => {
     return next(new ErrorHander("Image Size too large", 400));
   }
 
-  if (file.mimetype !== "image/jpeg" && file.mimetype !== "image/png") {
-    removeTmp(file.tempFilePath);
+  // if (file.mimetype !== "image/jpeg" && file.mimetype !== "image/png") {
+  //   removeTmp(file.tempFilePath);
 
-    return next(new ErrorHander("File format is incorrect.", 400));
-  }
+  //   return next(new ErrorHander("File format is incorrect.", 400));
+  // }
   catchAsyncError( cloudinary.v2.uploader.upload(
     file.tempFilePath,
     { folder: "ProductImages" },

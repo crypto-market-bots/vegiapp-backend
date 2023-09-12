@@ -20,7 +20,7 @@ const userOtpVerification = require("../models/userOtpVerification");
 const { DESTRUCTION } = require("dns");
 const smsKey = process.env.SMS_SECRET_KEY;
 const twilioNum = process.env.TWILIO_PHONE_NUMBER;
-
+const { broadcastMessage } = require('../Common/websocket');
 //register the user
 exports.registerUser = catchAsyncError(async (req, res, next) => {
   const { name, email, password, phone, pincode, image, public_image_id,refer_id } =
@@ -158,6 +158,7 @@ exports.loginUserEmail = catchAsyncError(async (req, res, next) => {
   const { email, password } = req.body;
   if (email && password) {
     ////"hello");
+    console.log('ure')
     const user = await User.findOne({ email }).select("+password");
     if (user) {
       //  //user);
@@ -170,7 +171,6 @@ exports.loginUserEmail = catchAsyncError(async (req, res, next) => {
           { expiresIn: "5d" }
         );
 
-        //res.send({"status": "success","message":"LOGIN sucessful","token": token})
         res
           .status(200)
           .json({ success: true, message: "Login Successful", token: token });

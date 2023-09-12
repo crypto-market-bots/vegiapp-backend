@@ -29,23 +29,25 @@ exports.sendOTP = catchAsyncError(async (req, res, next) => {
     const data = `${phone}.${otp}.${expires}`;
     const hash = crypto.createHmac("sha256", smsKey).update(data).digest("hex");
     const fullHash = `${hash}.${expires}`;
-  
-    client.messages
-      .create({
-        body: `Your One Time Login Password For Veg lover is ${otp} . Valid only for 2 minutes`,
-        from: twilioNum,
-        friendlyName: "My First Verify Service",
-        to: phone,
-      })
-      .then((messages) => {
+    console.log('oooo')
+    console.log(otp)
+    res.status(200).send({ phone, hash: fullHash });
+  //   client.messages
+  //     .create({
+  //       body: `Your One Time Login Password For Veg lover is ${otp} . Valid only for 2 minutes`,
+  //       from: twilioNum,
+  //       friendlyName: "My First Verify Service",
+  //       to: phone,
+  //     })
+  //     .then((messages) => {
         
-	res.status(200).send({ phone, hash: fullHash });
+	// res.status(200).send({ phone, hash: fullHash });
        
-      })
-      .catch((err) => {
-        console.log("sendotp error : ", err);
-      	res.status(400).send({message:"failed" });
-      });
+  //     })
+  //     .catch((err) => {
+  //       console.log("sendotp error : ", err);
+  //     	res.status(400).send({message:"failed" });
+  //     });
   
     // res.status(200).send({ phone, hash: fullHash, otp }); 
      // this bypass otp via api only for development instead hitting twilio api all the time

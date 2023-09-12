@@ -67,38 +67,43 @@ exports.isAuthenticated = catchAsyncError(async (req, res, next) => {
 
 exports.authorizedRoles = (...roles) => {
   return (req, res, next) => {
+    console.log(req);
     //"in roles")
     //console.log("hello seller outside");
     if (req.seller) {
-      console.log("hello seller seller");
-
-      //"seller");
-      if (!roles.includes(req.seller.role)) {
+      console.log(req.seller.role);
+      console.log(roles);
+      if(req.seller.role=='owner'){
+        next();
+      }
+      else if (!roles.includes(req.seller.role)) {
         return next(
           new ErrorHander(
             `Role ${req.seller.role} is not allowed to access this resource`,
             403
           )
         );
+      } else{
+        next();
       }
-      next();
+      // next();
 
     } 
     else if (req.user) {
-      //console.log("hello seller user");
-
-      //"user");
-      console.log(roles);
-      console.log(req.user.role)
-      if (!roles.includes(req.user.role)) {
+      if(req.user.role=='owner'){
+        next();
+      }
+      else if (roles.findIndex(ele=> ele==req.user.role)==-1) {
       return next(
         new ErrorHander(
           `Role ${req.user.role} is not allowed to access this resource`,
           403
         )
       );
+    } else{
+      next();
     }
-    next();
+    // next();
   }
   };
 };

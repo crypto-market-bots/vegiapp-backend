@@ -10,13 +10,18 @@ const Wallet = require("../models/walletModel");
 const Razorpay = require("razorpay");
 const { v4: uuidv4 } = require("uuid");
 const { listenerCount } = require("process");
+const Cart = require("../models/cartModel");
+// anotherFile.js
 
+const { broadcastMessage } = require('../Common/websocket');
 let razorPayInstance = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
   key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
 
 exports.newOrder = catchAsyncError(async (req, res, next) => {
+  console.log(req.body);
+  console.log("ulaula");
   const { shippingInfo_id, orderItems, coin } = req.body;
   let wallet = await Wallet.findOne({ user: req.user._id });
   if (!shippingInfo_id || !orderItems) {
@@ -24,14 +29,15 @@ exports.newOrder = catchAsyncError(async (req, res, next) => {
   }
 
   const loc = await Location.findById(shippingInfo_id._id);
-
   if (!loc) return next(new ErrorHander("Location does not exist"));
 
   var itemsPrice = 0;
   var discount = 0;
   let store_location;
   for (const orderItem of orderItems) {
-    const product = await Product.findById(orderItem.product).select("+seller");
+    const product = await Product.findById(orderItem.productId).select(
+      "+seller"
+    );
     if (!product)
       return next(new ErrorHander("Some of your product is not exists"));
     if (orderItem.quantity > product.stock)
@@ -42,11 +48,12 @@ exports.newOrder = catchAsyncError(async (req, res, next) => {
       );
 
     const seller = await Seller.findById(product.seller);
+    console.log(product.seller);
     store_location = seller.store_location;
-    orderItem.price = product.real_price*orderItem.quantity;
-    orderItem.discount = 
-      Math.ceil(( (product.real_price * product.discount) / 100) *
-      orderItem.quantity);
+    orderItem.price = product.real_price * orderItem.quantity;
+    orderItem.discount = Math.ceil(
+      ((product.real_price * product.discount) / 100) * orderItem.quantity
+    );
     product.stock -= orderItem.quantity;
 
     await product.save({ validateBeforeSave: false });
@@ -64,14 +71,12 @@ exports.newOrder = catchAsyncError(async (req, res, next) => {
 
   //if used coins is === to calculated amount
   //means order is placed with trans is paid
-  console.log(itemsPrice,discount,coin
-    )
-  let totalPrice = itemsPrice-discount-(coin?coin:0); //shipping and tax price functionality pending
-  console.log(typeof(totalPrice),totalPrice)
+  console.log(itemsPrice, discount, coin);
+  let totalPrice = itemsPrice - discount - (coin ? coin : 0); //shipping and tax price functionality pending
+  console.log(typeof totalPrice, totalPrice);
   console.log(Date(Date.now()));
-  
-  
-  if (coin == itemsPrice-discount) {
+
+  if (coin == itemsPrice - discount) {
     const order = await Order.create({
       shippingInfo_id,
       orderItems,
@@ -82,16 +87,16 @@ exports.newOrder = catchAsyncError(async (req, res, next) => {
       store_location: store_location,
       trans_status: "paid",
       createdDate: Date(Date.now()),
-      coin:coin,
+      coin: coin,
     });
-    wallet.amount = wallet.amount-coin;
-    wallet.save()
+    wallet.amount = wallet.amount - coin;
+    wallet.save();
+    broadcastMessage('refresh-orders');
     res.status(200).json({
       success: true,
       message: "order placed successfully",
-      order
+      order,
     });
-
   }
 
   //if if used coins is less === to calculated amount
@@ -121,13 +126,13 @@ exports.newOrder = catchAsyncError(async (req, res, next) => {
         totalPrice,
         customer: req.user._id,
         store_location: store_location,
-        coin:coin,
+        coin: coin,
 
         //razorpay
         order_id: response.id,
         receipt_id: response.receipt,
         trans_status: response.status,
-        createdDate:  Date(Date.now()),
+        createdDate: Date(Date.now()),
       });
       res.status(201).json({
         success: true,
@@ -140,12 +145,97 @@ exports.newOrder = catchAsyncError(async (req, res, next) => {
       return next(new ErrorHander("Try Again Something is wrong"));
     });
 });
+exports.newCodOrder = catchAsyncError(async (req, res, next) => {
+  console.log(req.body);
+
+  const { shippingInfo_id, orderItems, coin } = req.body;
+  let wallet = await Wallet.findOne({ user: req.user._id });
+  if (!shippingInfo_id || !orderItems) {
+    return next(new ErrorHander("All Fields Required", 400));
+  }
+
+  const loc = await Location.findById(shippingInfo_id._id);
+  if (!loc) return next(new ErrorHander("Location does not exist"));
+
+  var itemsPrice = 0;
+  var discount = 0;
+  let store_location;
+  let itemsInOrder = [];
+  console.log(orderItems);
+  console.log('oooooo')
+  for (const orderItem of orderItems) {
+    const product = await Product.findById(orderItem.productId).select(
+      "+seller"
+    );
+    itemsPrice = itemsPrice + product.real_price * orderItem.quantity;
+    if (!product)
+      return next(new ErrorHander("Some of your product is not exists"));
+    if (orderItem.quantity > product.stock)
+      return next(
+        new ErrorHander(
+          `Your quantity of this ${product.name} is more that is  not availble in our stock`
+        )
+      );
+
+    const seller = await Seller.findById(product.seller);
+    store_location = seller.store_location;
+    orderItem.price = product.real_price * orderItem.quantity;
+    orderItem.discount = Math.ceil(
+      ((product.real_price * product.discount) / 100) * orderItem.quantity
+    );
+    discount += orderItem.discount;
+    product.stock -= orderItem.quantity;
+
+    await product.save({ validateBeforeSave: false });
+    orderItem.product = orderItem.productId;
+    itemsInOrder.push(orderItem);
+  }
+  let totalPrice = itemsPrice - discount - (coin ? coin : 0); //shipping and tax price functionality pending
+    itemsPrice = Math.ceil(itemsPrice);
+    const orderObj = await Order.create({
+      shippingInfo_id: shippingInfo_id,
+      orderItems: itemsInOrder,
+      itemsPrice: itemsPrice,
+      discount: discount,
+      totalPrice: totalPrice,
+      customer: req.user._id,
+      store_location: store_location,
+      trans_status: "pending",
+      createdDate: Date(Date.now()),
+      coin: coin,
+    })
+      .then(async (response) => {
+        wallet.amount = wallet.amount - coin;
+        wallet.save();
+        const orderNew = {
+          shippingInfo_id: shippingInfo_id,
+          orderItems: itemsInOrder,
+          itemsPrice: itemsPrice,
+          discount: discount,
+          totalPrice: totalPrice,
+          customer: req.user._id,
+          store_location: store_location,
+          trans_status: "pending",
+          createdDate: Date(Date.now()),
+          coin: coin,
+        };
+        broadcastMessage('refresh-orders');
+        res.status(200).json({
+          success: true,
+          message: "order placed successfully",
+          order: orderNew,
+        });
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+});
 
 exports.verifyOrder = catchAsyncError(async (req, res, next) => {
-  const {coin} = req.body;
- 
+  const { coin } = req.body;
+
   body = req.body.razorpay_order_id + "|" + req.body.razorpay_payment_id;
-  let wallet = await Wallet.findOne({user:req.user._id})
+  let wallet = await Wallet.findOne({ user: req.user._id });
 
   let crypto = require("crypto");
   let expectedSignature = crypto
@@ -156,8 +246,8 @@ exports.verifyOrder = catchAsyncError(async (req, res, next) => {
   if (expectedSignature === req.body.razorpay_signature) {
     // now here update the coins  // coins
     // minus
-    wallet.amount = wallet.amount-coin;
-   await wallet.save()
+    wallet.amount = wallet.amount - coin;
+    await wallet.save();
     await Order.findOneAndUpdate(
       { order_id: req.body.razorpay_order_id },
       {
@@ -213,19 +303,26 @@ exports.myOrders = catchAsyncError(async (req, res, next) => {
 //Get all the order -- admin
 
 exports.getAllOrders = catchAsyncError(async (req, res, next) => {
-  const orders = await Order.find();
-
+  try {
+    const orders = await Order.find();
+    console.log(orders);
   let totalAmount = 0;
   orders.forEach((o) => {
     totalAmount += o.totalPrice;
   });
+  let activeOrders = orders.filter(item => item.status === 'pending' || item.status === 'shipped');
 
   res.status(200).json({
     success: true,
     totalAmount,
     orders,
   });
+  } catch (error) {
+    // Handle the error and send an error response if needed
+    res.status(500).json({ success: false, error: 'Internal Server Error'+error });
+  }
 });
+
 
 //Update the order Status -- Admin
 exports.updateOrderStatus = catchAsyncError(async (req, res, next) => {
@@ -235,23 +332,25 @@ exports.updateOrderStatus = catchAsyncError(async (req, res, next) => {
     return next(new ErrorHander("Order is not find by this id", 404));
   }
 
-  if (order.orderStatus === "delivered") {
+  if (order.trans_status === "delivered") {
     return next(new ErrorHander("You have already delivered this order", 400));
   }
 
   console.log(order);
-  if (order.orderStatus === "shipped") {
+  if (order.trans_status === "shipped") {
     order.orderItems.forEach(async (o) => {
       await updateStock(o.product, o.quantity);
     });
   }
 
+  order.trans_status = req.body.status;
   order.orderStatus = req.body.status;
 
   if (req.body.status === "delivered") {
     order.deliveredDate = Date(Date.now());
   }
   await order.save({ validateBeforeSave: false });
+  broadcastMessage('refresh-orders');
   res.status(200).json({
     success: true,
   });
@@ -277,19 +376,17 @@ exports.deleteOrder = catchAsyncError(async (req, res, next) => {
   }
 
   await order.remove();
-
+  broadcastMessage('refresh-orders');
   res.status(200).json({
     success: true,
   });
 });
 
-
-
 //rating and comment functionality handle
-exports.reviewOrder = catchAsyncError(async(req,res,next) => {
-  const {rating,comment} = req.body;
-  if(!rating) return next(new ErrorHander("Rating is mandtory"))
-  if(rating>5) return next(new ErrorHander("rating is not more than 5"))
+exports.reviewOrder = catchAsyncError(async (req, res, next) => {
+  const { rating, comment } = req.body;
+  if (!rating) return next(new ErrorHander("Rating is mandtory"));
+  if (rating > 5) return next(new ErrorHander("rating is not more than 5"));
   const order = await Order.findById(req.params.id);
 
   if (!order) {
@@ -297,29 +394,32 @@ exports.reviewOrder = catchAsyncError(async(req,res,next) => {
   }
 
   if (order.orderStatus != "delivered") {
-    return next(new ErrorHander("Order is not delivered . So, you are not able to give the review on our product", 400));
+    return next(
+      new ErrorHander(
+        "Order is not delivered . So, you are not able to give the review on our product",
+        400
+      )
+    );
   }
- 
-  for(const item of order.orderItems) {
 
-     const productId = item.product;
-    
+  for (const item of order.orderItems) {
+    const productId = item.product;
+
     const review = {
       user: req.user._id,
       name: req.user.name,
       rating: rating,
       comment: comment,
     };
-  
+
     const product = await Product.findById(productId);
 
-    if(!product) continue; //if product is deleted by owner
-   
-  
+    if (!product) continue; //if product is deleted by owner
+
     const reviewed = product.reviews.find(
       (rev) => rev.user.toString() === req.user._id.toString()
     );
-  
+
     if (reviewed) {
       product.reviews.forEach((rev) => {
         if (rev.user.toString() === req.user._id.toString()) {
@@ -328,7 +428,7 @@ exports.reviewOrder = catchAsyncError(async(req,res,next) => {
       });
     } else {
       product.reviews.push(review);
-  
+
       product.numOfReviews = product.reviews.length;
     }
     let sum = 0;
@@ -336,17 +436,15 @@ exports.reviewOrder = catchAsyncError(async(req,res,next) => {
       sum += rev.rating;
     });
     product.rating = sum / product.reviews.length;
-  
+
     product.save({ validateBeforeSave: false });
-  
-   
   }
-  order.rating=rating;
-  order.comment=comment;
+  order.rating = rating;
+  order.comment = comment;
 
   order.save();
   res.status(200).json({
-    success:true,
-    message:'Review update successfull'
-  })
-})
+    success: true,
+    message: "Review update successfull",
+  });
+});

@@ -175,6 +175,7 @@ exports.getSingleSection = catchAsyncError(async (req, res, next) => {
   const section = await Section.findById(req.params.id).populate({
     path: "productsId",
   });
+  console.log(section);
 
   res.status(200).json({ success: true, section });
 });
