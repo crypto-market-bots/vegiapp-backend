@@ -100,7 +100,7 @@ exports.getAllBannerImage = catchAsyncError(async(req,res,next)=>{
     
 
      
-    const image = await bannerImage.find({seller:req.seller._id});
+    const image = await bannerImage.find();
     res.status(200).json({
       success:true,
       image : image
@@ -116,10 +116,6 @@ exports.getAllBannerImage = catchAsyncError(async(req,res,next)=>{
       image : image
     })
   }
-  res.status(200).json({
-    success:true,
-    
-  })
 })
 
 
