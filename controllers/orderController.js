@@ -304,24 +304,45 @@ exports.myOrders = catchAsyncError(async (req, res, next) => {
 
 exports.getAllOrders = catchAsyncError(async (req, res, next) => {
   try {
-    const orders = await Order.find();
-    console.log(orders);
-  let totalAmount = 0;
-  orders.forEach((o) => {
-    totalAmount += o.totalPrice;
-  });
-  let activeOrders = orders.filter(item => item.status === 'pending' || item.status === 'shipped');
+    // Get the page number and page size from query parameters or set default values
+    const page = parseInt(req.query.page) || 1;
+    const pageSize = parseInt(req.query.pageSize) || 10;
 
-  res.status(200).json({
-    success: true,
-    totalAmount,
-    orders,
-  });
+    // Calculate the number of documents to skip
+    const skip = (page - 1) * pageSize;
+    console.log(skip);
+
+    // Query the database with pagination
+    const orders = await Order.find()
+      .skip(skip)
+      .limit(pageSize)
+      .exec();
+    console.log(orders);
+    // Calculate the total number of orders (you may need to query the total count separately)
+    const totalOrders = await Order.countDocuments();
+
+    // Calculate the total amount for the orders on the current page
+    let totalAmount = 0;
+    orders.forEach((o) => {
+      totalAmount += o.totalPrice;
+    });
+
+    // Filter active orders
+    const activeOrders = orders.filter(item => item.status === 'pending' || item.status === 'shipped');
+    const totalPages = Math.ceil(totalOrders / pageSize);
+    res.status(200).json({
+      success: true,
+      totalAmount,
+      totalPages,
+      totalOrders,
+      orders: orders,
+    });
   } catch (error) {
     // Handle the error and send an error response if needed
-    res.status(500).json({ success: false, error: 'Internal Server Error'+error });
+    res.status(500).json({ success: false, error: 'Internal Server Error' + error });
   }
 });
+
 
 
 //Update the order Status -- Admin
