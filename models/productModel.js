@@ -114,6 +114,10 @@ const productSchema = new mongoose.Schema({
   quantity:{
     type:Number,
     required:[true,"enter the quantity"]
+  },
+  product_location:{
+    type:String,
+    required:[true,"enter product location"]
   }
   //section
   //count

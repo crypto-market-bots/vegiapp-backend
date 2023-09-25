@@ -18,7 +18,7 @@ cloudinary.config({
 });
 //Create Product-- only use by Admin
 exports.createProduct = catchAsyncError(async (req, res, next) => {
-  console.log(req);
+  // console.log(req);
   req.body.seller = req.seller.id ? req.seller.id : req.seller._id;
  
   let public;
@@ -46,11 +46,12 @@ exports.createProduct = catchAsyncError(async (req, res, next) => {
     { folder: "ProductImages" },
     async (err, result) => {
       if (err) return next(new ErrorHander(err, 400));
-      console.log(result);
+      // console.log(result);
       (public = result.public_id), (imageone = result.secure_url);
       removeTmp(file.tempFilePath);
 
       console.log("hello ", imageone);
+      console.log("productt",req.body);
       req.body.public_image_id = public;
       req.body.image = imageone;
       const product = await Product.create(req.body).then(()=>{

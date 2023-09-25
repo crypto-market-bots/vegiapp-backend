@@ -9,6 +9,7 @@ const { transporter, use } = require("../Config/email");
 const sendEmail = require("../utils/sendEmail");
 const {broadcastMessage} = require('../Common/websocket');
 const User = require("../models/userModel");
+const locationModel = require("../models/locationModel");
 dotenv.config({ path: "../Config/config.env" });
 
 exports.registerSeller = catchAsyncError(async (req, res, next) => {
@@ -140,6 +141,15 @@ exports.getAllSellers = catchAsyncError(async (req, res, next) => {
   res.status(200).json({
     success: true,
     sellers,
+  });
+});
+
+exports.getAllStores = catchAsyncError(async (req, res, next) => {
+  const stores = await locationModel.find();
+
+  res.status(200).json({
+    success: true,
+    stores,
   });
 });
 
