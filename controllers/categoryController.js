@@ -1,5 +1,6 @@
 const catchAsyncError = require("../middleware/catchAsyncError");
 const Category = require("../models/categoriesModel");
+const Product = require("../models/productModel");
 const ErrorHander = require("../utils/errorhander");
 
 const multer = require("multer");
@@ -165,6 +166,10 @@ exports.updateCategory = catchAsyncError(async (req, res, next) => {
 
 exports.getAllCategory = catchAsyncError(async (req, res, next) => {
   const category = await Category.find();
+  category.forEach(element => {
+    let products = Product.find({product_type:element._id});
+    console.log(products);
+  });
   res.status(200).json({
     success: true,
     category: category,

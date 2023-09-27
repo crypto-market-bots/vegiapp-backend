@@ -1,4 +1,6 @@
 const Product = require("../models/productModel");
+const Category = require("../models/categoriesModel");
+const Section = require("../models/sectionModel");
 const ErrorHander = require("../utils/errorhander");
 const catchAsyncError = require("../middleware/catchAsyncError");
 const ApiFeatures = require("../utils/apifeatures");
@@ -54,8 +56,10 @@ exports.createProduct = catchAsyncError(async (req, res, next) => {
       console.log("productt",req.body);
       req.body.public_image_id = public;
       req.body.image = imageone;
-      const product = await Product.create(req.body).then(()=>{
-        console.log("successfully")
+    
+      const product = await Product.create(req.body).then(async ()=>{
+        console.log("successfully");
+        console.log(product);
       }).catch((err)=>{
         return next(new ErrorHander(err,400));
       });
