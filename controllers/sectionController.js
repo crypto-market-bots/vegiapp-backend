@@ -1,5 +1,5 @@
 const catchAsyncError = require("../middleware/catchAsyncError");
-
+const Product = require("../models/productModel");
 const Section = require("../models/sectionModel");
 const ErrorHander = require("../utils/errorhander");
 
@@ -165,6 +165,16 @@ exports.updateSection = catchAsyncError(async (req, res, next) => {
 
 exports.getAllSection = catchAsyncError(async (req, res, next) => {
   const section = await Section.find();
+  for (const element of section) {
+    if(req.user && req.user.role=='user'){
+      console.log(req.user);
+      const products = await Product.find({ section: { $in: [element._id] },product_location:req.user.current_store_location });
+      element.productsId = element.productsId.concat(products.map(product => product._id));
+    } else{
+      const products = await Product.find({ section: { $in: [element._id] } });
+      element.productsId = element.productsId.concat(products.map(product => product._id));
+    }
+  }
   res.status(200).json({
     success: true,
     section: section,
@@ -176,7 +186,14 @@ exports.getSingleSection = catchAsyncError(async (req, res, next) => {
     path: "productsId",
   });
   console.log(section);
-
+  if(req.user && req.user.role=='user'){
+    console.log(req.user);
+    const products = await Product.find({ section: { $in: [section._id] },product_location:req.user.current_store_location });
+    section.productsId = products;
+  } else{
+    const products = await Product.find({ section: { $in: [section._id] } });
+    section.productsId = products;
+  }
   res.status(200).json({ success: true, section });
 });
 

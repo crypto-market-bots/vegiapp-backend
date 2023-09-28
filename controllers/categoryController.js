@@ -165,21 +165,45 @@ exports.updateCategory = catchAsyncError(async (req, res, next) => {
 });
 
 exports.getAllCategory = catchAsyncError(async (req, res, next) => {
-  const category = await Category.find();
-  category.forEach(element => {
-    let products = Product.find({product_type:element._id});
-    console.log(products);
-  });
-  res.status(200).json({
-    success: true,
-    category: category,
-  });
+  try {
+    let category = await Category.find();
+    console.log('ulululull');
+    for (const element of category) {
+      if(req.user && req.user.role=='user'){
+        const products = await Product.find({ product_type: element._id,product_location:req.user.current_store_location });
+        console.log(products)
+        console.log(element)
+        console.log(req.user.current_store_location)
+        element.productsId = element.productsId.concat(products.map(product => product._id));
+      } else{
+        const products = await Product.find({ product_type: element._id });
+        element.productsId = element.productsId.concat(products.map(product => product._id));
+      }
+    }
+    console.log(category);
+
+    res.status(200).json({
+      success: true,
+      category: category,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, error: 'Server error' });
+  }
 });
+
 
 exports.getSingleCategory = catchAsyncError(async (req, res, next) => {
   const category = await Category.findById(req.params.id).populate({
     path: "productsId",
   });
+  if(req.user && req.user.role=='user'){
+    const products = await Product.find({ product_type: category._id,product_location:req.user.current_store_location });
+    category.productsId = products;
+  } else{
+    const products = await Product.find({ product_type: category._id });
+    category.productsId = products;
+  }
 
   res.status(200).json({ success: true, category });
 });
