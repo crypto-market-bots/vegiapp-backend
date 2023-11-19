@@ -314,6 +314,7 @@ exports.getAllOrders = catchAsyncError(async (req, res, next) => {
 
     // Query the database with pagination
     const orders = await Order.find()
+      .sort({ created_at: -1 })
       .skip(skip)
       .limit(pageSize)
       .exec();
