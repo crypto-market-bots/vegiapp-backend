@@ -186,6 +186,13 @@ exports.newCodOrder = catchAsyncError(async (req, res, next) => {
     discount += orderItem.discount;
     product.stock -= orderItem.quantity;
 
+    if (itemsPrice - discount < 100){
+      return res.status(403).json({
+        success: false,
+        message: "Order can't placed below 100 Rs.",
+      });
+    }
+
     await product.save({ validateBeforeSave: false });
     orderItem.product = orderItem.productId;
     itemsInOrder.push(orderItem);
